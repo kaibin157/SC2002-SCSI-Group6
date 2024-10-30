@@ -34,9 +34,28 @@ public class Administrator extends User {
             System.out.println("4. Approve Replenishment Requests");
             System.out.println("5. Change Password");
             System.out.println("6. Logout");
+            
+            int choice = -1;
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
+            while (true) {
+                System.out.print("Enter your choice (1-6): ");
+                
+                // Check if input is an integer
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();  // Consume newline
+
+                    // Check if choice is in the valid range
+                    if (choice >= 1 && choice <= 6) {
+                        break;  // Valid input
+                    } else {
+                        System.out.println("Invalid choice. Please enter a number between 1 and 6.");
+                    }
+                } else {
+                    System.out.println("Invalid input. Please enter a valid number.");
+                    scanner.next();  // Clear invalid input
+                }
+            }
 
             try {
                 switch (choice) {
@@ -60,9 +79,10 @@ public class Administrator extends User {
         					e.printStackTrace();
         				}
                     case 6:
+                    	System.out.println("Logging out...");
                         return;  // Logout
                     default:
-                        System.out.println("Invalid choice. Please try again.");
+                        System.out.println("Unexpected error.");
                 }
             } catch (IOException e) {
                 System.out.println("Error: " + e.getMessage());

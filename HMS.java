@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -1759,11 +1760,8 @@ public class HMS {
                     System.out.println("Service Provided: " + serviceProvided);
                     System.out.println("Prescribed Medications: " + prescribedMedications);
                     System.out.println("Consultation Notes: " + consultationNotes);
-                    if(status.equalsIgnoreCase("completed")) {
-                    	System.out.println("Status: Completed (Unpaid)");
-                    }else {
-                    	System.out.println("Status: " + status);
-                    }
+                    System.out.println("Status: " + status);
+ 
                     
                     System.out.println("------------------------------------------");
                 }
@@ -2371,11 +2369,13 @@ public class HMS {
                     String status = getCellValueAsString(row.getCell(6));  // Assuming status is in column 7
                     
                     // If the patient ID matches and the appointment is completed
-                    if (patient.getHospitalID().equalsIgnoreCase(patientID) && status.equalsIgnoreCase("completed")) {
+                    if (patient.getHospitalID().equalsIgnoreCase(patientID) && status.equalsIgnoreCase("unpaid")) {
                         outstandingAppointments.add(row);
                         String appointmentID = getCellValueAsString(row.getCell(2));  // Assuming appointment ID is in column 3
+                        String docName = getCellValueAsString(row.getCell(3));
                         String date = getCellValueAsString(row.getCell(5));  // Assuming date/time is in column 6
-                        System.out.println((outstandingAppointments.size()) + ". Appointment ID: " + appointmentID + " | Date/Time: " + date);
+                        double price = row.getCell(11).getNumericCellValue(); 
+                        System.out.println((outstandingAppointments.size()) + ". Appointment ID: " + appointmentID + " | Doctor: " + docName + " | Date/Time: " + date + " | Total: $" + price);
                     }
                 }
 
@@ -2421,10 +2421,99 @@ public class HMS {
                 outputStream.close();
             }
             
+            
+            public void sendInvoice(Pharmacist pharmacist) throws IOException {
+                FileInputStream file = new FileInputStream(APPOINTMENT_FILE_PATH);
+                Workbook workbook = new XSSFWorkbook(file);
+                Sheet sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
 
+                List<Row> completedAppointments = new ArrayList<>();
+                System.out.println("Completed Appointments:");
 
+                // Loop through the rows to find completed appointments
+                for (Row row : sheet) {
+                    if (row.getRowNum() == 0) continue;  // Skip header row
 
+                    String status = getCellValueAsString(row.getCell(6));  // Assuming status is in column 7
+                    
+                    // If the appointment is completed
+                    if (status.equalsIgnoreCase("completed")) {
+                        completedAppointments.add(row);
+                        String appointmentID = getCellValueAsString(row.getCell(2));  // Assuming appointment ID is in column 3
+                        String patientName = getCellValueAsString(row.getCell(4));    // Assuming patient name is in column 5
+                        String date = getCellValueAsString(row.getCell(5));           // Assuming date/time is in column 6
 
+                        System.out.println((completedAppointments.size()) + ". Appointment ID: " + appointmentID + " | Patient: " + patientName + " | Date/Time: " + date);
+                    }
+                }
+
+                if (completedAppointments.isEmpty()) {
+                    System.out.println("There are no completed appointments.");
+                    workbook.close();
+                    file.close();
+                    return;
+                }
+
+                // Ask the pharmacist to choose which appointment to send an invoice for
+                Scanner scanner = new Scanner(System.in);
+                int choice = -1;
+                while (true) {
+                    System.out.print("Enter the number of the appointment to send an invoice for: ");
+                    if (scanner.hasNextInt()) {
+                        choice = scanner.nextInt();
+                        scanner.nextLine();  // Consume newline
+                        if (choice >= 1 && choice <= completedAppointments.size()) {
+                            break;  // Valid choice
+                        } else {
+                            System.out.println("Invalid choice. Please enter a valid number.");
+                        }
+                    } else {
+                        System.out.println("Invalid input. Please enter a valid number.");
+                        scanner.next();  // Clear invalid input
+                    }
+                }
+
+                // Ask the pharmacist to enter the price
+                double price = 0.0;
+                while (true) {
+                    System.out.print("Enter the amount: $");
+                    if (scanner.hasNextDouble()) {
+                        price = scanner.nextDouble();
+                        scanner.nextLine();  // Consume newline
+                        if (price > 0) {
+                            break;  // Valid price
+                        } else {
+                            System.out.println("Amount must be a positive number.");
+                        }
+                    } else {
+                        System.out.println("Invalid input. Please enter a valid price.");
+                        scanner.next();  // Clear invalid input
+                    }
+                }
+
+                // Format the price to two decimal places
+                DecimalFormat df = new DecimalFormat("0.00");
+                String formattedPrice = df.format(price);
+
+                // Get the selected appointment and update its status to "unpaid"
+                Row selectedRow = completedAppointments.get(choice - 1);
+                selectedRow.getCell(6).setCellValue("unpaid");  // Change status to "unpaid"
+                
+                // Optionally, add a new column to store the invoice amount
+                Cell priceCell = selectedRow.createCell(11);  // Assuming the price is to be saved in a new column 12 (index 11)
+                priceCell.setCellValue(Double.parseDouble(formattedPrice));
+
+                // Write changes back to the Excel file
+                file.close();
+                FileOutputStream outputStream = new FileOutputStream(APPOINTMENT_FILE_PATH);
+                workbook.write(outputStream);
+                workbook.close();
+                outputStream.close();
+
+                System.out.println("Invoice sent successfully.");
+            }
+
+            
 
         }
 

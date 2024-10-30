@@ -83,12 +83,32 @@ public class Patient extends User {
             System.out.println("6. Cancel an Appointment");
             System.out.println("7. View Scheduled Appointments");
             System.out.println("8. View Past Appointment Outcome Records");
-            System.out.println("9. Outstanding Bills");
+            System.out.println("9. Pay Outstanding Bills");
             System.out.println("10. Change Password");
             System.out.println("11. Logout");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
+            int choice = -1;
+
+            // Validate input to ensure it's an integer within the valid range (1-11)
+            while (true) {
+                System.out.print("Enter your choice (1-11): ");
+                
+                // Check if input is an integer
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();  // Consume newline
+
+                    // Check if choice is in the valid range
+                    if (choice >= 1 && choice <= 11) {
+                        break;  // Valid input
+                    } else {
+                        System.out.println("Invalid choice. Please enter a number between 1 and 11.");
+                    }
+                } else {
+                    System.out.println("Invalid input. Please enter a valid number.");
+                    scanner.next();  // Clear invalid input
+                }
+            }
 
             switch (choice) {
                 case 1:
@@ -165,9 +185,10 @@ public class Patient extends User {
 					e.printStackTrace();
 				}
                 case 11:
+                	System.out.println("Logging out...");
                     return;  // Logout
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("Unexpected error.");
             }
         }
     }

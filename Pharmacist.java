@@ -34,11 +34,32 @@ public class Pharmacist extends User {
             System.out.println("3. View Medication Inventory");
             System.out.println("4. Submit Replenishment Request");
             System.out.println("5. View Replenishment Requests");
-            System.out.println("6. Change Password");
-            System.out.println("7. Logout");
+            System.out.println("6. Send Invoice");
+            System.out.println("7. Change Password");
+            System.out.println("8. Logout");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
+            int choice = -1;
+
+            // Validate input to ensure it's an integer within the valid range (1-11)
+            while (true) {
+                System.out.print("Enter your choice (1-8): ");
+                
+                // Check if input is an integer
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();  // Consume newline
+
+                    // Check if choice is in the valid range
+                    if (choice >= 1 && choice <= 8) {
+                        break;  // Valid input
+                    } else {
+                        System.out.println("Invalid choice. Please enter a number between 1 and 8.");
+                    }
+                } else {
+                    System.out.println("Invalid input. Please enter a valid number.");
+                    scanner.next();  // Clear invalid input
+                }
+            }
 
             switch (choice) {
                 case 1:
@@ -81,17 +102,25 @@ public class Pharmacist extends User {
 					e.printStackTrace();
 				}  // View Replenishment Requests
                     break;
-                case 6: 
+                case 6:  // New case for sending invoices
+                    try {
+                        hms.sendInvoice(this);  // Method to send invoice
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 7: 
 				try {
 					hms.changePassword(this, scanner);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                case 7:
+                case 8:
+                	System.out.println("Logging out...");
                     return;  // Logout
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("Unexpected error.");
             }
         }
     }

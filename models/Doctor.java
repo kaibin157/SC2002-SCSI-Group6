@@ -1,4 +1,6 @@
-package oop;
+package oop.models;
+
+import oop.HMS;
 
 import java.util.Scanner;
 import java.io.IOException;
@@ -82,7 +84,7 @@ public class Doctor extends User {
             switch (choice) {
                 case 1:
 				try {
-					hms.viewPatientRecords(this);
+					hms.viewPatientRecords();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -90,7 +92,7 @@ public class Doctor extends User {
                     break;
                 case 2:
 				try {
-					hms.updatePatientRecords(this);
+					hms.updatePatientRecords();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

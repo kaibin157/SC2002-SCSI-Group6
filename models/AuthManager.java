@@ -1,4 +1,4 @@
-package oop;
+package oop.models;
 
 import java.io.IOException;
 

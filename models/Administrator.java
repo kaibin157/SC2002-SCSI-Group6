@@ -1,4 +1,6 @@
-package oop;
+package oop.models;
+
+import oop.HMS;
 
 import java.io.IOException;
 import java.util.Scanner;

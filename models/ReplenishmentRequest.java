@@ -1,4 +1,4 @@
-package oop;
+package oop.models;
 
 public class ReplenishmentRequest {
     private String medicationName;

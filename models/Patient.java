@@ -1,4 +1,6 @@
-package oop;
+package oop.models;
+
+import oop.HMS;
 
 import java.util.Scanner;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package oop;
 
-import oop.models.User;
+import oop.model.User;
 
 import java.io.IOException;
 import java.util.Scanner;

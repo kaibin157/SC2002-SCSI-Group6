@@ -1,8 +1,8 @@
 package oop.controller;
 
-import oop.utils.Constant;
-import oop.utils.Helper;
-import oop.models.*;
+import oop.model.*;
+import oop.util.Constant;
+import oop.util.Helper;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -19,6 +19,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * The {@code UserController} class manages user-related operations within the hospital system,
+ * including handling hospital staff, patient records, and doctor schedules. It interacts with
+ * various Excel files to persist and retrieve user and staff data.
+ */
 public class UserController {
 
     private List<Doctor> doctors = new ArrayList<>();
@@ -26,11 +31,29 @@ public class UserController {
     private List<Pharmacist> pharmacists = new ArrayList<>();
     private List<Patient> patients = new ArrayList<>();
 
+    /**
+     * Retrieves the list of all doctors.
+     *
+     * @return a {@link List} of {@link Doctor} objects
+     */
     public List<Doctor> getDoctors() {
         return doctors;
     }
-    public List<User> getUsers(){ return users; }
 
+    /**
+     * Retrieves the list of all users.
+     *
+     * @return a {@link List} of {@link User} objects
+     */
+    public List<User> getUsers() {
+        return users;
+    }
+
+    /**
+     * Displays the list of hospital staff by reading from the staff Excel file.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewHospitalStaff() throws IOException {
         FileInputStream file = new FileInputStream(Constant.STAFF_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -53,6 +76,12 @@ public class UserController {
         file.close();
     }
 
+    /**
+     * Adds a new staff member to the hospital by collecting details from the user and updating the Excel files.
+     *
+     * @param scanner the {@link Scanner} object used to read user input
+     * @throws IOException if an I/O error occurs while accessing the Excel files
+     */
     public void addStaffMember(Scanner scanner) throws IOException {
         // Open the Excel file for staff
         FileInputStream staffFile = new FileInputStream(Constant.STAFF_FILE_PATH);
@@ -174,6 +203,12 @@ public class UserController {
         System.out.println("Staff member added successfully.");
     }
 
+    /**
+     * Updates the details of an existing staff member by collecting new information from the user and updating the Excel file.
+     *
+     * @param scanner the {@link Scanner} object used to read user input
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updateStaffMember(Scanner scanner) throws IOException {
         FileInputStream file = new FileInputStream(Constant.STAFF_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -256,6 +291,12 @@ public class UserController {
         }
     }
 
+    /**
+     * Removes a staff member from the hospital by their Staff ID and updates the Excel file accordingly.
+     *
+     * @param scanner the {@link Scanner} object used to read user input
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void removeStaffMember(Scanner scanner) throws IOException {
         FileInputStream file = new FileInputStream(Constant.STAFF_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -291,7 +332,12 @@ public class UserController {
         }
     }
 
-    // Method to update patient information in the Excel file
+    /**
+     * Updates the email and phone number of a specific patient in the patient Excel file.
+     *
+     * @param patient the {@link Patient} whose information is to be updated
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updatePatientInfoInExcel(Patient patient) throws IOException {
         FileInputStream file = new FileInputStream(Constant.PATIENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -318,6 +364,11 @@ public class UserController {
         file.close();
     }
 
+    /**
+     * Loads staff members from the staff Excel file into the system's internal lists.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void loadStaffFromExcel() throws IOException {
         FileInputStream file = new FileInputStream(Constant.STAFF_FILE_PATH);  // Path to your staff Excel file
         Workbook workbook = new XSSFWorkbook(file);
@@ -362,9 +413,14 @@ public class UserController {
 
         workbook.close();
         file.close();
-
     }
 
+    /**
+     * Appends authentication details for a new staff member to the authentication Excel file.
+     *
+     * @param staffID the ID of the staff member to append authentication for
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     private void appendAuthenticationToExcel(String staffID) throws IOException {
         // Open the Authentication_List.xlsx file
         FileInputStream authFile = new FileInputStream(Constant.AUTHENTICATION_FILE_PATH);
@@ -387,7 +443,11 @@ public class UserController {
         authFile.close();
     }
 
-    // Method to load patients from Excel file
+    /**
+     * Loads patient records from the patient Excel file into the system's internal lists.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void loadPatientsFromExcel() throws IOException {
         FileInputStream file = new FileInputStream(Constant.PATIENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -414,7 +474,11 @@ public class UserController {
         file.close();
     }
 
-    // Method for viewing patient records (doctor can only see their patients' records)
+    /**
+     * Views the medical records of a specific patient by reading from the patient Excel file.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewPatientRecords() throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -470,7 +534,11 @@ public class UserController {
         file.close();
     }
 
-    // Method for updating patient records
+    /**
+     * Updates the medical records of a specific patient by adding a new diagnosis and updating the Excel file.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updatePatientRecords() throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -486,7 +554,7 @@ public class UserController {
 
         // Iterate through rows in the sheet to find the patient by ID
         for (Row row : sheet) {
-            if (row.getRowNum() == 0) continue;  // Skip header row
+            if (row.getRowNum() == 0) continue;  // Skip the header row
 
             String excelPatientID = Helper.getCellValueAsString(row.getCell(0));  // Assuming patient ID is in column 1
             if (excelPatientID.equalsIgnoreCase(patientID)) {
@@ -529,7 +597,13 @@ public class UserController {
         outputStream.close();
     }
 
-    // Method for viewing doctor's personal schedule (appointments)
+    /**
+     * Views the schedule of a specific doctor by displaying their upcoming appointments and available time slots.
+     *
+     * @param doctor      the {@link Doctor} whose schedule is to be viewed
+     * @param appointments a {@link List} of {@link Appointment} objects representing all appointments in the system
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewDoctorSchedule(Doctor doctor, List<Appointment> appointments) throws IOException {
         System.out.println("Upcoming Appointments for Dr. " + doctor.getName() + ":");
 
@@ -580,7 +654,13 @@ public class UserController {
         file.close();
     }
 
-    // Method for setting doctor's availability for appointments
+    /**
+     * Sets the availability of a doctor by allowing them to input available time slots,
+     * validates the input, and updates the Excel file accordingly.
+     *
+     * @param doctor the {@link Doctor} whose availability is to be set
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void setDoctorAvailability(Doctor doctor) throws IOException {
         Scanner scanner = new Scanner(System.in);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -638,5 +718,4 @@ public class UserController {
         availabilityWorkbook.close();
         availabilityFile.close();
     }
-
 }

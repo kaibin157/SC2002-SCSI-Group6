@@ -1,9 +1,9 @@
 package oop.controller;
 
-import oop.utils.Constant;
-import oop.utils.Helper;
-import oop.models.Medication;
-import oop.models.Patient;
+import oop.model.Medication;
+import oop.model.Patient;
+import oop.util.Constant;
+import oop.util.Helper;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -15,10 +15,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * The {@code InventoryController} class manages the inventory of medications within the system.
+ * It provides functionalities to add, update, remove medications, view inventory, and handle prescription statuses.
+ * This class interacts with Excel files to persist and retrieve medication data.
+ */
 public class InventoryController {
 
     private List<Medication> inventory = new ArrayList<>();
 
+    /**
+     * Adds a new medication to the inventory by collecting details from the user and updating the Excel file.
+     *
+     * @param scanner the {@link Scanner} object used to read user input
+     * @param sheet   the {@link Sheet} object representing the medication data in Excel
+     * @param workbook the {@link Workbook} object representing the Excel workbook
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void addMedication(Scanner scanner, Sheet sheet, Workbook workbook) throws IOException {
         System.out.println("Enter the name of the new medication:");
         String medicationName = scanner.nextLine();
@@ -48,7 +61,14 @@ public class InventoryController {
         System.out.println("Medication added successfully.");
     }
 
-    // Update stock for a specific medication
+    /**
+     * Updates the stock level of an existing medication by collecting new stock information from the user.
+     *
+     * @param scanner the {@link Scanner} object used to read user input
+     * @param sheet   the {@link Sheet} object representing the medication data in Excel
+     * @param workbook the {@link Workbook} object representing the Excel workbook
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updateMedicationStock(Scanner scanner, Sheet sheet, Workbook workbook) throws IOException {
         System.out.println("Enter the name of the medication to update:");
         String medicationName = scanner.nextLine();
@@ -81,6 +101,14 @@ public class InventoryController {
         }
     }
 
+    /**
+     * Removes a medication from the inventory based on the medication name provided by the user.
+     *
+     * @param scanner the {@link Scanner} object used to read user input
+     * @param sheet   the {@link Sheet} object representing the medication data in Excel
+     * @param workbook the {@link Workbook} object representing the Excel workbook
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void removeMedication(Scanner scanner, Sheet sheet, Workbook workbook) throws IOException {
         System.out.println("Enter the name of the medication to remove:");
         String medicationName = scanner.nextLine();
@@ -112,7 +140,13 @@ public class InventoryController {
         }
     }
 
-    // Method to update the Initial Stock in the Medicine_List.xlsx file
+    /**
+     * Updates the stock level of a medication by adding a specified amount.
+     *
+     * @param medicationName the name of the medication to update
+     * @param addedAmount    the amount to add to the current stock
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updateMedicineStock(String medicationName, int addedAmount) throws IOException {
         // Open the Medicine_List.xlsx file
         FileInputStream medicineFile = new FileInputStream(Constant.MEDICINE_FILE_PATH);
@@ -146,6 +180,12 @@ public class InventoryController {
         medicineOutputStream.close();
     }
 
+    /**
+     * Views the medical records of a specific patient by reading from the patient Excel file.
+     *
+     * @param patient the {@link Patient} whose medical records are to be viewed
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewMedicalRecords(Patient patient) throws IOException {
         FileInputStream file = new FileInputStream(Constant.PATIENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -188,7 +228,11 @@ public class InventoryController {
         file.close();
     }
 
-    // 2. Update Prescription Status (e.g., from "pending" to "dispensed")
+    /**
+     * Updates the prescription status of medications from "pending" to "dispensed" based on user input.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updatePrescriptionStatus() throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -205,16 +249,16 @@ public class InventoryController {
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;  // Skip header row
 
-            String prescriptionStatus = Helper.getCellValueAsString(row.getCell(10));  // Assuming Prescription Status is in column 10
+            String prescriptionStatus = Helper.getCellValueAsString(row.getCell(10));  // Assuming Prescription Status is in column 11
 
             if (prescriptionStatus.equalsIgnoreCase("pending")) {
                 hasPendingPrescriptions = true;
                 pendingAppointments.add(row);  // Add the row to the list of pending appointments
 
                 String appointmentID = Helper.getCellValueAsString(row.getCell(2));  // Assuming Appointment ID is in column 3
-                String patientName = Helper.getCellValueAsString(row.getCell(1));    // Assuming Patient Name is in column 5
+                String patientName = Helper.getCellValueAsString(row.getCell(1));    // Assuming Patient Name is in column 2
                 String dateTime = Helper.getCellValueAsString(row.getCell(5));       // Assuming Date/Time is in column 6
-                String meds = Helper.getCellValueAsString(row.getCell(9));
+                String meds = Helper.getCellValueAsString(row.getCell(9));          // Assuming Medications are in column 10
                 System.out.println((pendingAppointments.size()) + ". Appointment ID: " + appointmentID + " | Patient: " + patientName + " | Date/Time: " + dateTime + " | Prescribed Medications (Pending): " + meds);
             }
         }
@@ -232,8 +276,6 @@ public class InventoryController {
             System.out.print("Choose an appointment to update by entering the number: ");
             if (scanner.hasNextInt()) {
                 choice = scanner.nextInt();
-                scanner.nextLine();  // Consume the newline
-
                 if (choice >= 1 && choice <= pendingAppointments.size()) {
                     break;  // Valid input, exit loop
                 } else {
@@ -260,7 +302,11 @@ public class InventoryController {
         outputStream.close();
     }
 
-    // 3. View Medication Inventory for pharmacists
+    /**
+     * Views the medication inventory by reading and displaying data from the Excel file.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewMedicationInventory() throws IOException {
         FileInputStream file = new FileInputStream(Constant.MEDICINE_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -281,8 +327,11 @@ public class InventoryController {
         file.close();
     }
 
-    // Save the medication inventory back to Excel
-    // Save the updated medication inventory back to the Excel file
+    /**
+     * Saves the current medication inventory to the Excel file by updating stock levels.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void saveMedicationsToExcel() throws IOException {
         FileInputStream file = new FileInputStream(Constant.MEDICINE_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -308,7 +357,11 @@ public class InventoryController {
         file.close();
     }
 
-    // Method to load medications from Excel file
+    /**
+     * Loads medications from the Excel file into the inventory list.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void loadMedicationsFromExcel() throws IOException {
         FileInputStream file = new FileInputStream(Constant.MEDICINE_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -330,8 +383,12 @@ public class InventoryController {
         file.close();
     }
 
-    // 4. Submit a Replenishment Request for medications with low stock
-    // Search for a medication by name in the inventory
+    /**
+     * Searches for a medication in the inventory by its name.
+     *
+     * @param medicationName the name of the medication to search for
+     * @return the {@link Medication} object if found; {@code null} otherwise
+     */
     public Medication getMedicationByName(String medicationName) {
         for (Medication medication : inventory) {
             if (medication.getName().equalsIgnoreCase(medicationName)) {

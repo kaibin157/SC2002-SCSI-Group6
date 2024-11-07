@@ -4,9 +4,9 @@ import oop.controller.AppointmentController;
 import oop.controller.AuthenticationController;
 import oop.controller.InventoryController;
 import oop.controller.UserController;
-import oop.models.*;
-import oop.utils.Constant;
-import oop.utils.Helper;
+import oop.model.*;
+import oop.util.Constant;
+import oop.util.Helper;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -19,6 +19,11 @@ import java.util.Scanner;
 import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 
+/**
+ * The {@code HMS} class represents the main controller for the Hospital Management System.
+ * It handles user authentication, staff management, appointment scheduling,
+ * inventory management, and various other hospital operations.
+ */
 public class HMS {
     private AuthenticationController authController;
     private InventoryController inventoryController;
@@ -27,7 +32,12 @@ public class HMS {
 
     private List<ReplenishmentRequest> replenishmentRequests = new ArrayList<>();
 
-    // Constructor to initialize the HMS system and load authentication data
+    /**
+     * Constructs a new {@code HMS} instance by initializing controllers and loading authentication data.
+     *
+     * @param authFilePath the file path to the authentication data file
+     * @throws IOException if there is an error loading authentication data
+     */
     public HMS(String authFilePath) throws IOException {
         this.authController = new AuthenticationController(authFilePath);  // Load authentication data
         userController = new UserController();
@@ -35,6 +45,10 @@ public class HMS {
         appointmentController = new AppointmentController();
     }
 
+    /**
+     * Initializes the system by loading staff, patients, and medication data from Excel files.
+     * This method should be called after constructing the {@code HMS} instance to ensure all data is loaded.
+     */
     public void initializeSystem() {
         try {
             userController.loadStaffFromExcel();
@@ -47,7 +61,16 @@ public class HMS {
         }
     }
 
-    // Method to handle login authentication
+    /**
+     * Handles user login authentication.
+     * If the user's password is the default, it forces the user to change the password.
+     *
+     * @param hospitalID the hospital ID of the user attempting to log in
+     * @param password   the password provided by the user
+     * @param scanner    a {@link Scanner} object for reading user input
+     * @return the authenticated {@link User} object if login is successful; {@code null} otherwise
+     * @throws IOException if an I/O error occurs during authentication
+     */
     public User login(String hospitalID, String password, Scanner scanner) throws IOException {
         var users = userController.getUsers();
         // Authenticate user
@@ -70,6 +93,13 @@ public class HMS {
         return null;
     }
 
+    /**
+     * Forces the user to change their password upon first login or when required.
+     *
+     * @param hospitalID the hospital ID of the user whose password needs to be changed
+     * @param scanner    a {@link Scanner} object for reading user input
+     * @throws IOException if an I/O error occurs during password update
+     */
     private void forcePasswordChange(String hospitalID, Scanner scanner) throws IOException {
         while (true) {
             System.out.println("Enter a new password (must be at least 12 characters long and include uppercase letters, lowercase letters, numbers, and symbols):");
@@ -97,6 +127,10 @@ public class HMS {
         }
     }
 
+    /**
+     * Allows the administrator to manage hospital staff, including adding, updating, and removing staff members.
+     * Displays the current staff list and prompts the administrator for an action.
+     */
     public void manageHospitalStaff() {
         Scanner scanner = new Scanner(System.in);
 
@@ -147,12 +181,22 @@ public class HMS {
         }
     }
 
-    // 2. View Appointment Details
+    /**
+     * Views appointment details by delegating to the {@link AppointmentController}.
+     *
+     * @throws IOException if an I/O error occurs while retrieving appointment details
+     */
     public void viewAppointmentDetails() throws IOException {
         appointmentController.viewAppointmentDetails();
     }
 
-    // 3. Manage Medication Inventory
+    /**
+     * Manages the medication inventory by displaying current inventory and allowing the administrator
+     * to add, update, or remove medications.
+     *
+     * @param scanner a {@link Scanner} object for reading user input
+     * @throws IOException if an I/O error occurs while accessing the medication data
+     */
     public void manageMedicationInventory(Scanner scanner) throws IOException {
         // Open the Excel file to read medication data
         FileInputStream file = new FileInputStream(Constant.MEDICINE_FILE_PATH);
@@ -210,28 +254,51 @@ public class HMS {
         file.close();
     }
 
-    // Method for viewing patient records (doctor can only see their patients' records)
+    /**
+     * Views patient records (doctors can only see their patients' records).
+     *
+     * @throws IOException if an I/O error occurs while accessing patient records
+     */
     public void viewPatientRecords() throws IOException {
         userController.viewPatientRecords();
     }
 
-    // Method for updating patient records
+    /**
+     * Updates patient records by delegating to the {@link UserController}.
+     *
+     * @throws IOException if an I/O error occurs while updating patient records
+     */
     public void updatePatientRecords() throws IOException {
         userController.updatePatientRecords();
     }
 
-    // Method for viewing doctor's personal schedule (appointments)
+    /**
+     * Views the doctor's personal schedule (appointments).
+     *
+     * @param doctor the {@link Doctor} whose schedule is to be viewed
+     * @throws IOException if an I/O error occurs while accessing the schedule
+     */
     public void viewDoctorSchedule(Doctor doctor) throws IOException {
         var appointments = appointmentController.getAppointments();
         userController.viewDoctorSchedule(doctor, appointments);
     }
 
-    // Method for setting doctor's availability for appointments
+    /**
+     * Sets the doctor's availability for appointments.
+     *
+     * @param doctor the {@link Doctor} whose availability is to be set
+     * @throws IOException if an I/O error occurs while updating availability
+     */
     public void setDoctorAvailability(Doctor doctor) throws IOException {
         userController.setDoctorAvailability(doctor);
     }
 
-    // Method for managing appointment requests (accept or decline)
+    /**
+     * Manages appointment requests by allowing the doctor to accept or decline pending appointments.
+     *
+     * @param doctor the {@link Doctor} who will manage the appointments
+     * @throws IOException if an I/O error occurs while managing appointments
+     */
     public void manageAppointmentRequests(Doctor doctor) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -293,57 +360,120 @@ public class HMS {
         outputStream.close();
     }
 
+    /**
+     * Views available appointment slots by delegating to the {@link AppointmentController}.
+     *
+     * @throws IOException if an I/O error occurs while accessing appointment slots
+     */
     public void viewAvailableAppointmentSlots() throws IOException {
         appointmentController.viewAvailableAppointmentSlots();
     }
 
-    // 2. Schedule an appointment for a patient
+    /**
+     * Schedules an appointment for a patient.
+     *
+     * @param patient the {@link Patient} for whom the appointment is being scheduled
+     * @throws IOException if an I/O error occurs while scheduling the appointment
+     */
     public void scheduleAppointment(Patient patient) throws IOException {
         var doctors = userController.getDoctors();
         appointmentController.scheduleAppointment(patient, doctors);
     }
 
-    // 3. Reschedule an appointment for a patient
+    /**
+     * Reschedules an existing appointment for a patient.
+     *
+     * @param patient the {@link Patient} whose appointment is being rescheduled
+     * @throws IOException if an I/O error occurs while rescheduling the appointment
+     */
     public void rescheduleAppointment(Patient patient) throws IOException {
         appointmentController.rescheduleAppointment(patient);
     }
 
-    // 4. Cancel an appointment for a patient
+    /**
+     * Cancels an appointment for a patient.
+     *
+     * @param patient the {@link Patient} whose appointment is being cancelled
+     * @throws IOException if an I/O error occurs while cancelling the appointment
+     */
     public void cancelAppointment(Patient patient) throws IOException {
         appointmentController.cancelAppointment(patient);
     }
 
-    // 5. View scheduled appointments for a patient
+    /**
+     * Views scheduled appointments for a patient.
+     *
+     * @param patient the {@link Patient} whose scheduled appointments are to be viewed
+     * @throws IOException if an I/O error occurs while accessing scheduled appointments
+     */
     public void viewScheduledAppointments(Patient patient) throws IOException {
         appointmentController.viewScheduledAppointments(patient);
     }
 
+    /**
+     * Views appointment outcome records by delegating to the {@link AppointmentController}.
+     *
+     * @throws IOException if an I/O error occurs while accessing appointment outcome records
+     */
     public void viewAppointmentOutcomeRecord() throws IOException {
         appointmentController.viewAppointmentOutcomeRecord();
     }
 
-    // 2. Update Prescription Status (e.g., from "pending" to "dispensed")
+    /**
+     * Updates the prescription status, such as changing it from "pending" to "dispensed".
+     *
+     * @throws IOException if an I/O error occurs while updating prescription status
+     */
     public void updatePrescriptionStatus() throws IOException {
         inventoryController.updatePrescriptionStatus();
     }
 
-    // 3. View Medication Inventory for pharmacists
+    /**
+     * Views the medication inventory for pharmacists.
+     *
+     * @throws IOException if an I/O error occurs while accessing the medication inventory
+     */
     public void viewMedicationInventory() throws IOException {
         inventoryController.viewMedicationInventory();
     }
 
+    /**
+     * Views upcoming appointments for a doctor.
+     *
+     * @param doctor the {@link Doctor} whose upcoming appointments are to be viewed
+     * @throws IOException if an I/O error occurs while accessing appointments
+     */
     public void viewUpcomingAppointments(Doctor doctor) throws IOException {
         appointmentController.viewUpcomingAppointments(doctor);
     }
 
+    /**
+     * Records the outcome of an appointment.
+     *
+     * @param doctor the {@link Doctor} who is recording the appointment outcome
+     * @throws IOException if an I/O error occurs while recording the outcome
+     */
     public void recordAppointmentOutcome(Doctor doctor) throws IOException {
         appointmentController.recordAppointmentOutcome(doctor);
     }
 
+    /**
+     * Views past appointment outcomes for a patient.
+     *
+     * @param patient the {@link Patient} whose past appointment outcomes are to be viewed
+     * @throws IOException if an I/O error occurs while accessing appointment outcomes
+     */
     public void viewPastAppointmentOutcomes(Patient patient) throws IOException {
         appointmentController.viewPastAppointmentOutcomes(patient);
     }
 
+    /**
+     * Allows a user to change their password.
+     *
+     * @param user    the {@link User} who wants to change their password
+     * @param scanner a {@link Scanner} object for reading user input
+     * @throws IOException if an I/O error occurs during password update
+     */
     public void changePassword(User user, Scanner scanner) throws IOException {
         while (true) {
             // Prompt for current password and validate
@@ -383,6 +513,12 @@ public class HMS {
         }
     }
 
+    /**
+     * Submits a replenishment request for medication that is low in stock.
+     *
+     * @param pharmacist the {@link Pharmacist} submitting the request
+     * @throws IOException if an I/O error occurs while submitting the request
+     */
     public void submitReplenishmentRequest(Pharmacist pharmacist) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -467,6 +603,14 @@ public class HMS {
         file.close();
     }
 
+    /**
+     * Appends a replenishment request to the Excel file.
+     *
+     * @param pharmacistID       the hospital ID of the pharmacist submitting the request
+     * @param medicationName     the name of the medication to replenish
+     * @param replenishmentAmount the amount of medication to request
+     * @throws IOException if an I/O error occurs while writing to the Excel file
+     */
     private void appendReplenishmentToExcel(String pharmacistID, String medicationName, int replenishmentAmount) throws IOException {
         // Open the Replenishment_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.REPLENISHMENT_FILE_PATH);
@@ -491,6 +635,19 @@ public class HMS {
         file.close();
     }
 
+    /**
+     * Approves pending replenishment requests and updates the medication stock accordingly.
+     *
+     * <p>This method performs the following actions:
+     * <ul>
+     *   <li>Displays all pending replenishment requests.</li>
+     *   <li>Allows the administrator to select a request to approve.</li>
+     *   <li>Updates the status of the selected request to "approved".</li>
+     *   <li>Updates the medication stock in the inventory based on the approved request.</li>
+     * </ul>
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel files
+     */
     public void approveReplenishmentRequests() throws IOException {
         // Open the Replenishment_List.xlsx file
         FileInputStream replenishmentFile = new FileInputStream(Constant.REPLENISHMENT_FILE_PATH);
@@ -572,10 +729,22 @@ public class HMS {
         inventoryController.updateMedicineStock(medicationName, requestedAmount);
     }
 
+    /**
+     * Updates patient information in the Excel file.
+     *
+     * @param patient the {@link Patient} whose information needs to be updated
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void updatePatientInfoInExcel(Patient patient) throws IOException {
         userController.updatePatientInfoInExcel(patient);
     }
 
+    /**
+     * Allows a pharmacist to view their replenishment requests and their statuses.
+     *
+     * @param pharmacist the {@link Pharmacist} whose requests are to be viewed
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewReplenishmentRequests(Pharmacist pharmacist) throws IOException {
         // Open the Replenishment_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.REPLENISHMENT_FILE_PATH);
@@ -609,6 +778,12 @@ public class HMS {
         file.close();
     }
 
+    /**
+     * Handles outstanding bills for a patient by allowing them to view and pay unpaid appointments.
+     *
+     * @param patient the {@link Patient} whose outstanding bills are to be handled
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void handleOutstandingBills(Patient patient) throws IOException {
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -617,14 +792,14 @@ public class HMS {
         List<Row> outstandingAppointments = new ArrayList<>();
         System.out.println("Outstanding Bills for " + patient.getName() + ":");
 
-        // Loop through the rows to find completed appointments
+        // Loop through the rows to find unpaid appointments
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;  // Skip header row
 
             String patientID = Helper.getCellValueAsString(row.getCell(1));  // Assuming patient ID is in column 2
             String status = Helper.getCellValueAsString(row.getCell(6));  // Assuming status is in column 7
 
-            // If the patient ID matches and the appointment is completed
+            // If the patient ID matches and the appointment is unpaid
             if (patient.getHospitalID().equalsIgnoreCase(patientID) && status.equalsIgnoreCase("unpaid")) {
                 outstandingAppointments.add(row);
                 String appointmentID = Helper.getCellValueAsString(row.getCell(2));  // Assuming appointment ID is in column 3
@@ -677,6 +852,13 @@ public class HMS {
         outputStream.close();
     }
 
+    /**
+     * Sends an invoice to patients by changing the status of completed appointments to "unpaid"
+     * and adding the invoice amount.
+     *
+     * @param pharmacist the {@link Pharmacist} who is sending the invoice
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void sendInvoice(Pharmacist pharmacist) throws IOException {
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -768,13 +950,26 @@ public class HMS {
         System.out.println("Invoice sent successfully.");
     }
 
+    /**
+     * Finds the last appointment ID by delegating to the {@link AppointmentController}.
+     *
+     * @return the last appointment ID as a {@code String}
+     * @throws IOException if an I/O error occurs while accessing appointment data
+     */
     public String findLastAppointmentID() throws IOException {
         return appointmentController.findLastAppointmentID();
     }
 
-    public void viewMedicalRecords(Patient patient) throws IOException{
+    /**
+     * Allows a patient to view their medical records.
+     *
+     * @param patient the {@link Patient} whose medical records are to be viewed
+     * @throws IOException if an I/O error occurs while accessing medical records
+     */
+    public void viewMedicalRecords(Patient patient) throws IOException {
         inventoryController.viewMedicalRecords(patient);
     }
+
 
 }
 

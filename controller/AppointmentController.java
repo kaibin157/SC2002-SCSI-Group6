@@ -1,10 +1,10 @@
 package oop.controller;
 
-import oop.models.Appointment;
-import oop.models.Doctor;
-import oop.models.Patient;
-import oop.utils.Constant;
-import oop.utils.Helper;
+import oop.model.Appointment;
+import oop.model.Doctor;
+import oop.model.Patient;
+import oop.util.Constant;
+import oop.util.Helper;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -20,11 +20,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * The {@code AppointmentController} class manages all operations related to appointments,
+ * including scheduling, rescheduling, cancellation, and viewing appointment details.
+ * It interacts with Excel files to persist appointment data.
+ */
 public class AppointmentController {
 
     private int nextAppointmentNumber;
     private List<Appointment> appointments = new ArrayList<>();
 
+    /**
+     * Constructs an {@code AppointmentController} and initializes the appointment number
+     * based on the last appointment ID found in the Excel file.
+     */
     public AppointmentController() {
         String lastAppointmentID = null;
         try {
@@ -32,13 +41,23 @@ public class AppointmentController {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        nextAppointmentNumber = Integer.parseInt(lastAppointmentID.substring(3)) + 1;  // Get the number and increment it    }
+        nextAppointmentNumber = Integer.parseInt(lastAppointmentID.substring(3)) + 1;  // Get the number and increment it
     }
 
+    /**
+     * Retrieves the list of all appointments.
+     *
+     * @return a {@link List} of {@link Appointment} objects
+     */
     public List<Appointment> getAppointments() {
         return appointments;
     }
-    // 2. View Appointment Details
+
+    /**
+     * Views appointment details by reading from the appointment Excel file.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewAppointmentDetails() throws IOException {
         // Open the Appointment_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
@@ -70,12 +89,22 @@ public class AppointmentController {
         file.close();
     }
 
-    // Mocked method to get all appointments
+    /**
+     * Retrieves all appointments in the system.
+     * This is a mocked method and should be replaced with actual implementation.
+     *
+     * @return a {@link List} of all {@link Appointment} objects
+     */
     private List<Appointment> getAllAppointments() {
         // Assuming you would have a way to store and manage all appointments in the system
         return new ArrayList<>();  // Replace with actual appointment data
     }
 
+    /**
+     * Views available appointment slots by reading from the doctor's availability Excel file.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewAvailableAppointmentSlots() throws IOException {
         FileInputStream file = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -99,7 +128,12 @@ public class AppointmentController {
         file.close();
     }
 
-    // Method to record the new appointment in Appointment_List.xlsx
+    /**
+     * Records a new appointment in the appointment Excel file.
+     *
+     * @param appointment the {@link Appointment} object to be recorded
+     * @throws IOException if an I/O error occurs while writing to the Excel file
+     */
     public void recordAppointmentInExcel(Appointment appointment) throws IOException {
 
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
@@ -125,10 +159,15 @@ public class AppointmentController {
         workbook.close();
         outputStream.close();
         file.close();
-
     }
 
-    // 2. Schedule an appointment for a patient
+    /**
+     * Schedules an appointment for a patient by allowing them to choose from available slots.
+     *
+     * @param patient the {@link Patient} who is scheduling the appointment
+     * @param doctors a list of available {@link Doctor}s
+     * @throws IOException if an I/O error occurs while accessing Excel files
+     */
     public void scheduleAppointment(Patient patient, List<Doctor> doctors) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -150,7 +189,7 @@ public class AppointmentController {
             String availabilitySlot = row.getCell(1).getStringCellValue();  // Availability slot in column 2
 
             // Find the corresponding doctor object from the list of doctors
-            Doctor doctor = findDoctorByID(doctorID,doctors);
+            Doctor doctor = findDoctorByID(doctorID, doctors);
 
             if (doctor != null) {
                 allAvailableSlots.add(availabilitySlot);
@@ -208,7 +247,12 @@ public class AppointmentController {
         file.close();
     }
 
-    // 3. Reschedule an appointment for a patient
+    /**
+     * Reschedules an existing appointment for a patient by allowing them to choose a new available slot.
+     *
+     * @param patient the {@link Patient} whose appointment is being rescheduled
+     * @throws IOException if an I/O error occurs while accessing Excel files
+     */
     public void rescheduleAppointment(Patient patient) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -228,7 +272,8 @@ public class AppointmentController {
             String patientID = Helper.getCellValueAsString(row.getCell(1));  // Assuming patient ID is in column 2
             String status = Helper.getCellValueAsString(row.getCell(6));     // Assuming status is in column 7
 
-            if (patient.getHospitalID().equalsIgnoreCase(patientID) && (status.equalsIgnoreCase("pending") || status.equalsIgnoreCase("confirmed"))) {              hasAppointments = true;
+            if (patient.getHospitalID().equalsIgnoreCase(patientID) && (status.equalsIgnoreCase("pending") || status.equalsIgnoreCase("confirmed"))) {
+                hasAppointments = true;
                 patientAppointments.add(row);
                 String appointmentID = Helper.getCellValueAsString(row.getCell(2));  // Assuming appointment ID is in column 3
                 String dateTime = Helper.getCellValueAsString(row.getCell(5));       // Assuming date/time is in column 6
@@ -344,7 +389,12 @@ public class AppointmentController {
         System.out.println("Appointment rescheduled successfully to " + newDateTime);
     }
 
-    // 4. Cancel an appointment for a patient
+    /**
+     * Cancels an appointment for a patient by allowing them to select from their pending or confirmed appointments.
+     *
+     * @param patient the {@link Patient} whose appointment is being cancelled
+     * @throws IOException if an I/O error occurs while accessing the Excel files
+     */
     public void cancelAppointment(Patient patient) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -423,7 +473,12 @@ public class AppointmentController {
         System.out.println("Appointment cancelled successfully.");
     }
 
-    // 5. View scheduled appointments for a patient
+    /**
+     * Views all scheduled appointments for a patient by reading from the appointment Excel file.
+     *
+     * @param patient the {@link Patient} whose appointments are to be viewed
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewScheduledAppointments(Patient patient) throws IOException {
         System.out.println("Your scheduled appointments:");
 
@@ -463,6 +518,11 @@ public class AppointmentController {
         }
     }
 
+    /**
+     * Views appointment outcome records by displaying completed or paid appointments.
+     *
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewAppointmentOutcomeRecord() throws IOException {
         // Open the Appointment_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
@@ -477,11 +537,11 @@ public class AppointmentController {
 
             // Retrieve necessary information from each row
             String appointmentID = Helper.getCellValueAsString(row.getCell(2));  // Appointment ID (Column 3)
-            String patientName = Helper.getCellValueAsString(row.getCell(4));    // Patient Name (Column 1)
+            String patientName = Helper.getCellValueAsString(row.getCell(4));    // Patient Name (Column 5)
             String doctorName = Helper.getCellValueAsString(row.getCell(3));     // Doctor Name (Column 4)
             String date = Helper.getCellValueAsString(row.getCell(5));           // Appointment Date (Column 6)
-            String medications = Helper.getCellValueAsString(row.getCell(9));    // Prescribed Medications (Column 5)
-            String status = Helper.getCellValueAsString(row.getCell(6));
+            String medications = Helper.getCellValueAsString(row.getCell(9));    // Prescribed Medications (Column 10)
+            String status = Helper.getCellValueAsString(row.getCell(6));         // Status (Column 7)
 
             // Display the information
             if (status.equalsIgnoreCase("completed") || status.equalsIgnoreCase("paid") || status.equalsIgnoreCase("unpaid")) {
@@ -500,7 +560,13 @@ public class AppointmentController {
         file.close();
     }
 
-    // Method to add slot back to DocAvailability_List.xlsx
+    /**
+     * Adds an availability slot back to the doctor's availability list in the Excel file.
+     *
+     * @param doctorID       the hospital ID of the doctor
+     * @param appointmentSlot the time slot to add back
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     private void addSlotBackToDoctorAvailability(String doctorID, String appointmentSlot) throws IOException {
         FileInputStream availabilityFile = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
         Workbook availabilityWorkbook = new XSSFWorkbook(availabilityFile);
@@ -521,6 +587,12 @@ public class AppointmentController {
         availabilityFile.close();
     }
 
+    /**
+     * Views all upcoming appointments for a specific doctor by reading from the appointment Excel file.
+     *
+     * @param doctor the {@link Doctor} whose upcoming appointments are to be viewed
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewUpcomingAppointments(Doctor doctor) throws IOException {
         // Open the Appointment_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
@@ -538,7 +610,7 @@ public class AppointmentController {
             if (row.getRowNum() == 0) continue;  // Skip header row
 
             // Extract relevant data from the row
-            String doctorID = row.getCell(0).getStringCellValue();  // Assuming doctor ID is in column 2
+            String doctorID = row.getCell(0).getStringCellValue();  // Assuming doctor ID is in column 1
             String status = row.getCell(6).getStringCellValue();    // Assuming status is in column 7
             String appointmentDateStr = row.getCell(5).getStringCellValue();  // Assuming date is in column 6
 
@@ -551,7 +623,7 @@ public class AppointmentController {
 
                     // Extract and display relevant appointment details
                     String appointmentID = row.getCell(2).getStringCellValue();  // Assuming appointment ID is in column 3
-                    String patientID = row.getCell(1).getStringCellValue();      // Assuming patient ID is in column 4
+                    String patientID = row.getCell(1).getStringCellValue();      // Assuming patient ID is in column 2
                     String patientName = row.getCell(4).getStringCellValue();    // Assuming patient name is in column 5
 
                     System.out.println("Appointment ID: " + appointmentID);
@@ -573,6 +645,12 @@ public class AppointmentController {
         file.close();
     }
 
+    /**
+     * Records the outcome of a confirmed appointment by updating service details and prescription status.
+     *
+     * @param doctor the {@link Doctor} who is recording the appointment outcome
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void recordAppointmentOutcome(Doctor doctor) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
@@ -589,10 +667,10 @@ public class AppointmentController {
             if (row.getRowNum() == 0) continue;  // Skip header row
 
             String appointmentID = Helper.getCellValueAsString(row.getCell(2));  // Assuming Appointment ID is in column 3
-            String doctorID = Helper.getCellValueAsString(row.getCell(0));  // Assuming Doctor ID is in column 2
+            String doctorID = Helper.getCellValueAsString(row.getCell(0));  // Assuming Doctor ID is in column 1
             String status = Helper.getCellValueAsString(row.getCell(6));  // Assuming Status is in column 7
 
-            if (doctor.getHospitalID().equals(doctorID) && status.equalsIgnoreCase("confirmed")) {
+            if (doctor.getHospitalID().equalsIgnoreCase(doctorID) && status.equalsIgnoreCase("confirmed")) {
                 hasConfirmedAppointments = true;
                 System.out.println("Appointment ID: " + appointmentID + " | Date/Time: " + Helper.getCellValueAsString(row.getCell(5)));
 
@@ -609,13 +687,13 @@ public class AppointmentController {
                     System.out.println("Enter consultation notes:");
                     String consultationNotes = scanner.nextLine();
 
-                    // Create cells if they don't exist
-                    Helper.createOrUpdateCell(row, 7, serviceProvided);  // Column 4: Service Provided
-                    Helper.createOrUpdateCell(row, 9, prescribedMedicationsInput);  // Column 5: Prescribed Medications
-                    Helper.createOrUpdateCell(row, 8, consultationNotes);  // Column 9: Consultation Notes
-                    Helper.createOrUpdateCell(row, 6, "completed");  // Column 7: Set appointment status to 'completed'
+                    // Create or update cells with the provided information
+                    Helper.createOrUpdateCell(row, 7, serviceProvided);              // Column 8: Service Provided
+                    Helper.createOrUpdateCell(row, 9, prescribedMedicationsInput);    // Column 10: Prescribed Medications
+                    Helper.createOrUpdateCell(row, 8, consultationNotes);            // Column 9: Consultation Notes
+                    Helper.createOrUpdateCell(row, 6, "completed");                   // Column 7: Set appointment status to 'completed'
                     if (!prescribedMedicationsInput.equalsIgnoreCase("nil")) {
-                        Helper.createOrUpdateCell(row, 10, "pending");  // Column 10: Prescription Status
+                        Helper.createOrUpdateCell(row, 10, "pending");                // Column 11: Prescription Status
                     }
                     System.out.println("Appointment outcome recorded successfully.");
                 }
@@ -634,6 +712,12 @@ public class AppointmentController {
         outputStream.close();
     }
 
+    /**
+     * Views past appointment outcomes for a patient by displaying completed or paid appointments.
+     *
+     * @param patient the {@link Patient} whose past appointment outcomes are to be viewed
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public void viewPastAppointmentOutcomes(Patient patient) throws IOException {
         // Open the Appointment_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
@@ -648,7 +732,7 @@ public class AppointmentController {
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;  // Skip the header row
 
-            // Read the patient ID from the second column (assuming patient ID is in column 1)
+            // Read the patient ID from the second column (assuming patient ID is in column 2)
             String patientID = Helper.getCellValueAsString(row.getCell(1));
 
             // Check if the appointment belongs to the logged-in patient and if the status is "completed"
@@ -663,7 +747,6 @@ public class AppointmentController {
                 String prescribedMedications = Helper.getCellValueAsString(row.getCell(9));  // Assuming medications are in column 10
                 String consultationNotes = Helper.getCellValueAsString(row.getCell(8));  // Assuming consultation notes are in column 9
 
-
                 // Display the past appointment details
                 System.out.println("Doctor: " + doctorName);
                 System.out.println("Date: " + date);
@@ -671,8 +754,6 @@ public class AppointmentController {
                 System.out.println("Prescribed Medications: " + prescribedMedications);
                 System.out.println("Consultation Notes: " + consultationNotes);
                 System.out.println("Status: " + status);
-
-
                 System.out.println("------------------------------------------");
             }
         }
@@ -687,6 +768,12 @@ public class AppointmentController {
         file.close();
     }
 
+    /**
+     * Finds the last appointment ID by reading from the appointment Excel file.
+     *
+     * @return the last appointment ID as a {@code String}
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     public String findLastAppointmentID() throws IOException {
         FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -711,7 +798,12 @@ public class AppointmentController {
         return lastAppointmentID;
     }
 
-    // Helper method to get appointments for a specific patient
+    /**
+     * Retrieves appointments for a specific patient.
+     *
+     * @param patient the {@link Patient} whose appointments are to be retrieved
+     * @return a {@link List} of {@link Appointment} objects belonging to the patient
+     */
     private List<Appointment> getAppointmentsForPatient(Patient patient) {
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment appointment : appointments) {
@@ -721,9 +813,14 @@ public class AppointmentController {
         }
         return patientAppointments;
     }
-    
-    // Helper method to remove a doctor's availability from Excel after booking
-    // Helper method to remove a doctor's availability from Excel after booking
+
+    /**
+     * Removes a doctor's availability slot from the Excel file after booking an appointment.
+     *
+     * @param doctorID the hospital ID of the doctor
+     * @param slot     the time slot to remove
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
     private void removeDoctorAvailabilityFromExcel(String doctorID, String slot) throws IOException {
         FileInputStream file = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
@@ -765,14 +862,24 @@ public class AppointmentController {
         file.close();
     }
 
-    // Helper method to generate unique appointment IDs
+    /**
+     * Generates a unique appointment ID by incrementing the last appointment number.
+     *
+     * @return a unique appointment ID as a {@code String}
+     */
     private String generateAppointmentID() {
         String newAppointmentID = "APT" + nextAppointmentNumber;
         nextAppointmentNumber++;  // Increment for the next appointment
         return newAppointmentID;
     }
 
-    // Helper method to find a doctor by ID from the list of doctors
+    /**
+     * Finds a doctor by their hospital ID from a list of doctors.
+     *
+     * @param doctorID the hospital ID of the doctor to find
+     * @param doctors  the list of available {@link Doctor} objects
+     * @return the {@link Doctor} object if found; {@code null} otherwise
+     */
     private Doctor findDoctorByID(String doctorID, List<Doctor> doctors) {
         for (Doctor doctor : doctors) {
             if (doctor.getHospitalID().equalsIgnoreCase(doctorID)) {

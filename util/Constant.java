@@ -1,4 +1,4 @@
-package oop.utils;
+package oop.util;
 
 public class Constant {
 

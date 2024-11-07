@@ -1,4 +1,4 @@
-package oop.models;
+package oop.model;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,106 +23,118 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+/**
+ * The Payment class handles processing patient payments,
+ * saving and retrieving encrypted card details, and storing
+ * this data in an Excel file.
+ */
 public class Payment {
-	// Encryption key for AES-256
-	private static final String AES_KEY = "0123456789abcdef0123456789abcdef"; 
-	private static final String PATIENT_FILE_PATH = "Patient_List.xlsx";
-	
+    // Encryption key for AES-256
+    private static final String AES_KEY = "0123456789abcdef0123456789abcdef";
+    private static final String PATIENT_FILE_PATH = "Patient_List.xlsx";
+
+    /**
+     * Default constructor for Payment class.
+     */
     public Payment() {
     }
-    
+
+    /**
+     * Processes the payment for a patient's appointment.
+     * Allows the use of saved card details if available and offers the option to save card details.
+     *
+     * @param appointmentRow The Excel row containing appointment data.
+     * @param patient The Patient object containing patient information.
+     * @param scanner Scanner object for user input.
+     * @throws IOException If there's an issue accessing or modifying the Excel file.
+     */
     public void processPayment(Row appointmentRow, Patient patient, Scanner scanner) throws IOException {
         System.out.println("Proceed to payment for Appointment ID: " + getCellValueAsString(appointmentRow.getCell(2)));
 
-        // Check if the patient already has saved card details
         String savedCardDetails = getSavedCardDetailsForPatient(patient);
 
         String cardNumber = null;
         String expiryDate = null;
 
         if (savedCardDetails != null) {
-            // Decrypt the saved card details
+            // Decrypt saved card details
             String[] decryptedCardDetails = decryptCardDetailsAES(savedCardDetails);
             cardNumber = decryptedCardDetails[0];
             expiryDate = decryptedCardDetails[1];
 
             System.out.println("Using saved card details for payment.");
-            System.out.println("Card Number: **** **** **** " + cardNumber.substring(12));  // Mask all but the last 4 digits
+            System.out.println("Card Number: **** **** **** " + cardNumber.substring(12));
             System.out.println("Expiry Date: " + expiryDate);
         } else {
-            // Card Number Input
+            // Get card number input from user
             while (true) {
                 System.out.print("Enter your card number (16 digits): ");
-                cardNumber = scanner.nextLine().replaceAll("\\s", "");  // Remove spaces
+                cardNumber = scanner.nextLine().replaceAll("\\s", "");
                 if (cardNumber.matches("\\d{16}")) {
-                    break;  // Valid card number
+                    break;
                 } else {
                     System.out.println("Invalid card number. Please enter exactly 16 digits.");
                 }
             }
 
-            // Expiry Date Input
+            // Get expiry date input from user
             while (true) {
                 System.out.print("Enter card expiry date (MM/YY): ");
                 expiryDate = scanner.nextLine();
-                if (expiryDate.matches("(0[1-9]|1[0-2])/[0-9]{2}")) {
-                    // Check if expiry date is in the future
-                    if (isExpiryDateValid(expiryDate)) {
-                        break;
-                    } else {
-                        System.out.println("Card expiry date must be in the future.");
-                    }
+                if (expiryDate.matches("(0[1-9]|1[0-2])/[0-9]{2}") && isExpiryDateValid(expiryDate)) {
+                    break;
                 } else {
                     System.out.println("Invalid expiry date. Please enter in MM/YY format.");
                 }
             }
         }
 
-        // CVC Input (still required even if card details are saved)
+        // Get CVC input from user
         String cvc;
         while (true) {
             System.out.print("Enter card CVC (3 digits): ");
             cvc = scanner.nextLine();
             if (cvc.matches("\\d{3}")) {
-                break;  // Valid CVC
+                break;
             } else {
                 System.out.println("Invalid CVC. Please enter exactly 3 digits.");
             }
         }
 
-        // Payment successful
         System.out.println("Payment successful. Thank you!");
 
-        // If the card wasn't saved before, ask to save it
         if (savedCardDetails == null) {
             System.out.print("Do you want to save your card details for future payments? (yes/no): ");
             String saveCardResponse = scanner.nextLine().trim().toLowerCase();
 
             if (saveCardResponse.equals("yes")) {
-                // Encrypt card details using AES-256
                 String encryptedCardDetails = encryptCardDetailsAES(cardNumber, expiryDate);
-
-                // Save encrypted card details in the 9th column of Patient_List.xlsx for the current patient
                 saveCardDetailsForPatient(patient, encryptedCardDetails);
                 System.out.println("Card details saved successfully.");
             }
         }
     }
 
-    // Method to get saved card details for a patient
+    /**
+     * Retrieves saved encrypted card details for a given patient from the Excel file.
+     *
+     * @param patient The Patient object containing patient information.
+     * @return The encrypted card details as a string, or null if no details are found.
+     * @throws IOException If there's an issue accessing the Excel file.
+     */
     private String getSavedCardDetailsForPatient(Patient patient) throws IOException {
         FileInputStream file = new FileInputStream(PATIENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
+        Sheet sheet = workbook.getSheetAt(0);
 
-        // Find the patient's row in the sheet
         for (Row row : sheet) {
-            String patientID = getCellValueAsString(row.getCell(0));  // Assuming Patient ID is in the first column
+            String patientID = getCellValueAsString(row.getCell(0));
             if (patient.getHospitalID().equalsIgnoreCase(patientID)) {
-                // Check if the patient has saved card details in the 9th column (index 8)
                 Cell cardDetailsCell = row.getCell(8);
                 if (cardDetailsCell != null) {
-                    return cardDetailsCell.getStringCellValue();  // Return encrypted card details
+                    workbook.close();
+                    file.close();
+                    return cardDetailsCell.getStringCellValue();
                 }
                 break;
             }
@@ -130,110 +142,83 @@ public class Payment {
 
         workbook.close();
         file.close();
-        return null;  // No card details saved
+        return null;
     }
 
- 
+    /**
+     * Decrypts the encrypted card details using AES-256 and returns the decrypted card number and expiry date.
+     *
+     * @param encryptedCardDetails The encrypted card details.
+     * @return A string array containing the card number and expiry date.
+     */
     private String[] decryptCardDetailsAES(String encryptedCardDetails) {
         try {
-            // Split the encrypted string into IV and encrypted data
             String[] parts = encryptedCardDetails.split(":");
-            if (parts.length != 2) {
-                throw new RuntimeException("Invalid encrypted data format");
-            }
+            byte[] iv = Base64.getDecoder().decode(parts[0]);
+            byte[] encryptedData = Base64.getDecoder().decode(parts[1]);
 
-            byte[] iv = Base64.getDecoder().decode(parts[0]);  // Extract IV
-            byte[] encryptedData = Base64.getDecoder().decode(parts[1]);  // Extract encrypted data
+            byte[] key = AES_KEY.getBytes("UTF-8");
 
-            byte[] key = AES_KEY.getBytes("UTF-8");  // Use the same predefined AES key
-
-            // Create AES cipher instance
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
             SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
 
-            // Initialize cipher in decryption mode
             cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
 
-            // Decrypt the card details
             byte[] decryptedData = cipher.doFinal(encryptedData);
-            String decryptedString = new String(decryptedData);
-
-            // Split the decrypted string into card number and expiry date
-            return decryptedString.split("\\|");
+            return new String(decryptedData).split("\\|");
         } catch (Exception e) {
             throw new RuntimeException("Error decrypting card details", e);
         }
     }
 
-
-
-
-
-
-
-
- 
+    /**
+     * Encrypts the card number and expiry date using AES-256.
+     *
+     * @param cardNumber The card number to encrypt.
+     * @param expiryDate The expiry date to encrypt.
+     * @return The encrypted card details as a Base64 encoded string.
+     */
     private String encryptCardDetailsAES(String cardNumber, String expiryDate) {
         try {
-            byte[] key = AES_KEY.getBytes("UTF-8");  // Use a predefined AES key
+            byte[] key = AES_KEY.getBytes("UTF-8");
 
-            // Create AES Cipher instance
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-            // Generate random IV (Initialization Vector)
-            byte[] iv = new byte[16];  // AES block size is 16 bytes
+            byte[] iv = new byte[16];
             SecureRandom random = new SecureRandom();
             random.nextBytes(iv);
 
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
             SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
 
-            // Initialize cipher in encryption mode
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
 
-            // Combine card number and expiry date
             String cardDetails = cardNumber + "|" + expiryDate;
 
-            // Encrypt the card details
             byte[] encrypted = cipher.doFinal(cardDetails.getBytes());
 
-            // Encode IV + encrypted text to Base64 and return (IV is needed for decryption)
             return Base64.getEncoder().encodeToString(iv) + ":" + Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception e) {
             throw new RuntimeException("Error encrypting card details", e);
         }
     }
 
-
-
-
-
-
-
-    // Method to generate a 256-bit AES key
-    private byte[] generateAESKey() {
-        try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-            keyGen.init(256);  // Initialize key generator for 256-bit AES key
-            SecretKey secretKey = keyGen.generateKey();
-            return secretKey.getEncoded();
-        } catch (Exception e) {
-            throw new RuntimeException("Error generating AES key", e);
-        }
-    }
-
-    // Method to save encrypted card details for a patient in Patient_List.xlsx
+    /**
+     * Saves encrypted card details for a patient in the Patient_List.xlsx file.
+     *
+     * @param patient The Patient object containing patient information.
+     * @param encryptedCardDetails The encrypted card details to save.
+     * @throws IOException If there's an issue accessing or modifying the Excel file.
+     */
     private void saveCardDetailsForPatient(Patient patient, String encryptedCardDetails) throws IOException {
         FileInputStream file = new FileInputStream(PATIENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
+        Sheet sheet = workbook.getSheetAt(0);
 
-        // Find the patient's row in the sheet
         for (Row row : sheet) {
-            String patientID = getCellValueAsString(row.getCell(0));  // Assuming Patient ID is in the first column
+            String patientID = getCellValueAsString(row.getCell(0));
             if (patient.getHospitalID().equalsIgnoreCase(patientID)) {
-                // Save encrypted card details in the 9th column (index 8)
                 Cell cardDetailsCell = row.getCell(8);
                 if (cardDetailsCell == null) {
                     cardDetailsCell = row.createCell(8);
@@ -243,7 +228,6 @@ public class Payment {
             }
         }
 
-        // Save the updated workbook
         FileOutputStream outputStream = new FileOutputStream(PATIENT_FILE_PATH);
         workbook.write(outputStream);
         workbook.close();
@@ -251,35 +235,44 @@ public class Payment {
         file.close();
     }
 
-    // Method to validate expiry date (must be in the future)
+    /**
+     * Validates if the expiry date is in the future.
+     *
+     * @param expiryDate The expiry date in MM/YY format.
+     * @return True if the expiry date is valid and in the future, false otherwise.
+     */
     private boolean isExpiryDateValid(String expiryDate) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("MM/yy");
             dateFormat.setLenient(false);
             Date expiry = dateFormat.parse(expiryDate);
-            return expiry.after(new Date());  // Check if expiry date is in the future
+            return expiry.after(new Date());
         } catch (ParseException e) {
-            return false;  // Invalid date format
+            return false;
         }
     }
-    
+
+    /**
+     * Retrieves the cell value as a string.
+     *
+     * @param cell The cell to retrieve the value from.
+     * @return The cell value as a string.
+     */
     private String getCellValueAsString(Cell cell) {
-        if (cell == null) {
-            return "";  // Return an empty string if the cell is null
-        }
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue();
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();  // Handle date cells
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+                    return dateFormat.format(cell.getDateCellValue());
                 } else {
-                    return String.valueOf((int) cell.getNumericCellValue());  // Convert numeric values to string
+                    return String.valueOf((int) cell.getNumericCellValue());
                 }
             case BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
             default:
-                return "";  // Return an empty string for other cell types
+                return "";
         }
     }
 }

@@ -202,6 +202,7 @@ public class InventoryController {
                 patientFound = true;
 
                 // Display patient details
+                System.out.println("Patient ID: " + Helper.getCellValueAsString(row.getCell(0)));
                 System.out.println("Patient Name: " + Helper.getCellValueAsString(row.getCell(1)));  // Assuming name is in column 2
                 System.out.println("Date of Birth: " + Helper.getCellValueAsString(row.getCell(2)));  // Assuming DOB is in column 3
                 System.out.println("Gender: " + Helper.getCellValueAsString(row.getCell(3)));  // Assuming gender is in column 4
@@ -215,6 +216,13 @@ public class InventoryController {
                     System.out.println("Past Diagnoses: No past diagnoses found.");
                 } else {
                     System.out.println("Past Diagnoses: " + pastDiagnoses);
+                }
+                
+                String pastTreatments = Helper.getCellValueAsString(row.getCell(8));  // Assuming past diagnoses are in column 8
+                if (pastTreatments.isEmpty()) {
+                    System.out.println("Past Treatments: No past treatments found.");
+                } else {
+                    System.out.println("Past Treatments: " + pastTreatments);
                 }
                 break;
             }

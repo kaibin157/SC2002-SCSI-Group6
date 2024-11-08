@@ -294,6 +294,17 @@ public class HMS {
     }
 
     /**
+     * Updates or deletes a doctor's availability in the system.
+     *
+     * @param doctor  the {@link Doctor} whose availability is to be updated
+     * @param scanner the {@link Scanner} object used to read user input
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
+    public void updateDoctorAvailability(Doctor doctor, Scanner scanner) throws IOException {
+        userController.updateDoctorAvailability(doctor,scanner);
+    }   
+    
+    /**
      * Manages appointment requests by allowing the doctor to accept or decline pending appointments.
      *
      * @param doctor the {@link Doctor} who will manage the appointments

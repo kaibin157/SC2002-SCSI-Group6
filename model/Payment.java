@@ -130,7 +130,7 @@ public class Payment {
         for (Row row : sheet) {
             String patientID = getCellValueAsString(row.getCell(0));
             if (patient.getHospitalID().equalsIgnoreCase(patientID)) {
-                Cell cardDetailsCell = row.getCell(8);
+                Cell cardDetailsCell = row.getCell(9);
                 if (cardDetailsCell != null) {
                     workbook.close();
                     file.close();
@@ -219,9 +219,9 @@ public class Payment {
         for (Row row : sheet) {
             String patientID = getCellValueAsString(row.getCell(0));
             if (patient.getHospitalID().equalsIgnoreCase(patientID)) {
-                Cell cardDetailsCell = row.getCell(8);
+                Cell cardDetailsCell = row.getCell(9);
                 if (cardDetailsCell == null) {
-                    cardDetailsCell = row.createCell(8);
+                    cardDetailsCell = row.createCell(9);
                 }
                 cardDetailsCell.setCellValue(encryptedCardDetails);
                 break;

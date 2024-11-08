@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -106,27 +108,57 @@ public class AppointmentController {
      * @throws IOException if an I/O error occurs while accessing the Excel file
      */
     public void viewAvailableAppointmentSlots() throws IOException {
-        FileInputStream file = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
-        Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);  // Assuming the first sheet contains doctor availability data
+        // Open the DocAvailability_List.xlsx file
+        FileInputStream availabilityFile = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
+        Workbook availabilityWorkbook = new XSSFWorkbook(availabilityFile);
+        Sheet availabilitySheet = availabilityWorkbook.getSheetAt(0);  // Assuming the first sheet contains availability data
+
+        // Open the Staff_List.xlsx file
+        FileInputStream staffFile = new FileInputStream(Constant.STAFF_FILE_PATH);
+        Workbook staffWorkbook = new XSSFWorkbook(staffFile);
+        Sheet staffSheet = staffWorkbook.getSheetAt(0);  // Assuming the first sheet contains staff data
+
+        // Create a map of Doctor ID to Doctor Name
+        Map<String, String> doctorNameMap = new HashMap<>();
+        for (Row staffRow : staffSheet) {
+            if (staffRow.getRowNum() == 0) continue; // Skip header row
+            String staffID = Helper.getCellValueAsString(staffRow.getCell(0));  // Assuming Staff ID is in column 1
+            String staffName = Helper.getCellValueAsString(staffRow.getCell(1));  // Assuming Staff Name is in column 2
+            String role = Helper.getCellValueAsString(staffRow.getCell(2));  // Assuming Role is in column 3
+            if (role.equalsIgnoreCase("doctor")) {  // Check if the role is 'doctor'
+                doctorNameMap.put(staffID, staffName);
+            }
+        }
 
         System.out.println("Available Appointment Slots:");
 
-        // Iterate through the rows to list available slots
-        for (Row row : sheet) {
-            if (row.getRowNum() == 0) continue;  // Skip the header row
+        // Iterate through the availability sheet to list slots with doctor names
+        boolean hasAvailableSlots = false;
+        for (Row availabilityRow : availabilitySheet) {
+            if (availabilityRow.getRowNum() == 0) continue; // Skip header row
 
-            // Read the doctor ID and available date/time slot
-            String doctorID = Helper.getCellValueAsString(row.getCell(0));  // Assuming doctor ID is in column 1
-            String appointmentDate = Helper.getCellValueAsString(row.getCell(1));  // Assuming appointment slot is in column 2
+            String doctorID = Helper.getCellValueAsString(availabilityRow.getCell(0));  // Doctor ID in column 1
+            String appointmentSlot = Helper.getCellValueAsString(availabilityRow.getCell(1));  // Slot in column 2
 
-            // Display available slots
-            System.out.println("Doctor ID: " + doctorID + " | Available Slot: " + appointmentDate);
+            // Fetch the doctor name from the map
+            String doctorName = doctorNameMap.getOrDefault(doctorID, "Unknown Doctor");
+
+            // Display the doctor name and available slot
+            System.out.println("Doctor: " + doctorName + " | Available Slot: " + appointmentSlot);
+            hasAvailableSlots = true;
         }
 
-        workbook.close();
-        file.close();
+        if (!hasAvailableSlots) {
+            System.out.println("No available appointment slots at the moment.");
+        }
+
+        // Close resources
+        availabilityWorkbook.close();
+        availabilityFile.close();
+        staffWorkbook.close();
+        staffFile.close();
     }
+
 
     /**
      * Records a new appointment in the appointment Excel file.

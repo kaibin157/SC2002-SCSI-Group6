@@ -505,21 +505,29 @@ public class UserController {
                 String dob = Helper.getCellValueAsString(row.getCell(2));   // Date of Birth in column 3
                 String gender = Helper.getCellValueAsString(row.getCell(3));  // Gender in column 4
                 String bloodType = Helper.getCellValueAsString(row.getCell(4));  // Blood Type in column 5
-                String contactInfo = Helper.getCellValueAsString(row.getCell(5));  // Contact in column 6
-                String pastDiagnoses = Helper.getCellValueAsString(row.getCell(6));  // Past diagnoses in column 7
+                String email = Helper.getCellValueAsString(row.getCell(5));  // email in column 6
+                String phoneNumber = Helper.getCellValueAsString(row.getCell(6));
+                String pastDiagnoses = Helper.getCellValueAsString(row.getCell(7));  // Past diagnoses in column 7
+                String pastTreatments = Helper.getCellValueAsString(row.getCell(8));
 
                 // Display patient details
                 System.out.println("Patient Name: " + name);
                 System.out.println("Date of Birth: " + dob);
                 System.out.println("Gender: " + gender);
                 System.out.println("Blood Type: " + bloodType);
-                System.out.println("Contact: " + contactInfo);
+                System.out.println("Email: " + email);
+                System.out.println("Phone Number: " + phoneNumber);
 
                 // Display past diagnoses
                 if (pastDiagnoses == null || pastDiagnoses.isEmpty()) {
                     System.out.println("Past Diagnoses: No past diagnoses found.");
                 } else {
                     System.out.println("Past Diagnoses: " + pastDiagnoses);
+                }
+                if (pastTreatments == null || pastTreatments.isEmpty()) {
+                    System.out.println("Past Treatments: No past treatments found.");
+                } else {
+                    System.out.println("Past Treatments: " + pastTreatments);
                 }
                 break;
             }
@@ -548,39 +556,68 @@ public class UserController {
         // Open the Patient_List.xlsx file
         FileInputStream file = new FileInputStream(Constant.PATIENT_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);  // Assuming the data is on the first sheet
+        Sheet sheet = workbook.getSheetAt(0); // Assuming the data is on the first sheet
 
         boolean patientFound = false;
 
         // Iterate through rows in the sheet to find the patient by ID
         for (Row row : sheet) {
-            if (row.getRowNum() == 0) continue;  // Skip the header row
+            if (row.getRowNum() == 0) continue; // Skip the header row
 
-            String excelPatientID = Helper.getCellValueAsString(row.getCell(0));  // Assuming patient ID is in column 1
+            String excelPatientID = Helper.getCellValueAsString(row.getCell(0)); // Assuming patient ID is in column 1
             if (excelPatientID.equalsIgnoreCase(patientID)) {
                 patientFound = true;
 
-                // Retrieve the existing diagnoses from the "Past Diagnoses" column (assumed to be column 7)
-                String pastDiagnoses = Helper.getCellValueAsString(row.getCell(6));
+                System.out.println("Choose an option:");
+                System.out.println("1. Add New Diagnosis");
+                System.out.println("2. Add New Treatment");
+                int choice = Helper.getChoice(scanner, 1, 2);
 
-                System.out.println("Enter new diagnosis:");
-                String newDiagnosis = scanner.nextLine();
+                if (choice == 1) {
+                    // Update Diagnoses
+                    String pastDiagnoses = Helper.getCellValueAsString(row.getCell(7)); // Assuming column 7 is 'Past Diagnoses'
 
-                // Append the new diagnosis to the existing diagnoses
-                if (pastDiagnoses == null || pastDiagnoses.isEmpty()) {
-                    pastDiagnoses = newDiagnosis;  // No previous diagnoses, just add the new one
-                } else {
-                    pastDiagnoses = pastDiagnoses + ", " + newDiagnosis;  // Append the new diagnosis to the existing ones
+                    System.out.println("Enter new diagnosis:");
+                    String newDiagnosis = scanner.nextLine();
+
+                    // Append the new diagnosis to the existing diagnoses
+                    if (pastDiagnoses == null || pastDiagnoses.isEmpty()) {
+                        pastDiagnoses = newDiagnosis; // No previous diagnoses, just add the new one
+                    } else {
+                        pastDiagnoses = pastDiagnoses + ", " + newDiagnosis; // Append the new diagnosis to the existing ones
+                    }
+
+                    // Update the "Past Diagnoses" column
+                    Cell diagnosisCell = row.getCell(7); // Assuming column 7 is the 'Past Diagnoses' column
+                    if (diagnosisCell == null) {
+                        diagnosisCell = row.createCell(7);
+                    }
+                    diagnosisCell.setCellValue(pastDiagnoses);
+
+                    System.out.println("Diagnosis updated successfully.");
+                } else if (choice == 2) {
+                    // Update Treatments
+                    String pastTreatments = Helper.getCellValueAsString(row.getCell(8)); // Assuming column 8 is 'Past Treatments'
+
+                    System.out.println("Enter new treatment:");
+                    String newTreatment = scanner.nextLine();
+
+                    // Append the new treatment to the existing treatments
+                    if (pastTreatments == null || pastTreatments.isEmpty()) {
+                        pastTreatments = newTreatment; // No previous treatments, just add the new one
+                    } else {
+                        pastTreatments = pastTreatments + ", " + newTreatment; // Append the new treatment to the existing ones
+                    }
+
+                    // Update the "Past Treatments" column
+                    Cell treatmentCell = row.getCell(8); // Assuming column 8 is the 'Past Treatments' column
+                    if (treatmentCell == null) {
+                        treatmentCell = row.createCell(8);
+                    }
+                    treatmentCell.setCellValue(pastTreatments);
+
+                    System.out.println("Treatment updated successfully.");
                 }
-
-                // Update the "Past Diagnoses" column with the new diagnosis
-                Cell diagnosisCell = row.getCell(6);  // Assuming column 7 is the 'Past Diagnoses' column
-                if (diagnosisCell == null) {
-                    diagnosisCell = row.createCell(6);
-                }
-                diagnosisCell.setCellValue(pastDiagnoses);
-
-                System.out.println("Diagnosis updated successfully.");
                 break;
             }
         }
@@ -596,6 +633,7 @@ public class UserController {
         workbook.close();
         outputStream.close();
     }
+
 
     /**
      * Views the schedule of a specific doctor by displaying their upcoming appointments and available time slots.
@@ -663,48 +701,43 @@ public class UserController {
      */
     public void setDoctorAvailability(Doctor doctor) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        dateFormat.setLenient(false);  // Disable lenient parsing to ensure strict format
 
         // Open the Excel file for doctor availability
         FileInputStream availabilityFile = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
         Workbook availabilityWorkbook = new XSSFWorkbook(availabilityFile);
-        Sheet availabilitySheet = availabilityWorkbook.getSheetAt(0);  // Assuming data is on the first sheet
+        Sheet availabilitySheet = availabilityWorkbook.getSheetAt(0); // Assuming data is on the first sheet
 
         while (true) {
             System.out.println("Enter available time slot for appointments (format: yyyy-MM-dd HH:mm): ");
             String input = scanner.nextLine();
 
-            // Validate the input date and time format
-            try {
-                Date enteredDate = dateFormat.parse(input);  // Parse the input date
-
-                // Check if the entered date is in the past
-                Date currentDate = new Date();
-                if (enteredDate.before(currentDate)) {
-                    System.out.println("The entered date and time is in the past. Please enter a future date.");
-                } else if (doctor.getAvailability().contains(input)) {
-                    // Check if the slot is already in the doctor's availability list
-                    System.out.println("This time slot has already been set. Please choose a different time.");
-                } else {
-                    doctor.setAvailability(input);  // If valid, add it to the doctor's availability
-                    System.out.println("Availability set for: " + input);
-
-                    // Write the availability to the Excel file
-                    int lastRowNum = availabilitySheet.getLastRowNum();
-                    Row newRow = availabilitySheet.createRow(lastRowNum + 1);
-
-                    newRow.createCell(0).setCellValue(doctor.getHospitalID());  // Doctor ID
-                    newRow.createCell(1).setCellValue(input);  // Availability slot
-
-                    // Save the changes to the Excel file
-                    FileOutputStream outputStream = new FileOutputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
-                    availabilityWorkbook.write(outputStream);
-                    outputStream.close();
-                }
-            } catch (ParseException e) {
-                System.out.println("Invalid format. Please follow the format: yyyy-MM-dd HH:mm");
+            // Validate the input using the isValidDateTime method
+            if (!isValidDateTime(input)) {
+                System.out.println("Invalid format or date is in the past. Please follow the format: yyyy-MM-dd HH:mm and ensure the date is in the future.");
+                continue;
             }
+
+            // Check if the time slot is already in the doctor's availability list
+            if (doctor.getAvailability().contains(input)) {
+                System.out.println("This time slot has already been set. Please choose a different time.");
+                continue;
+            }
+
+            // If valid, add it to the doctor's availability
+            doctor.setAvailability(input);
+            System.out.println("Availability set for: " + input);
+
+            // Write the availability to the Excel file
+            int lastRowNum = availabilitySheet.getLastRowNum();
+            Row newRow = availabilitySheet.createRow(lastRowNum + 1);
+
+            newRow.createCell(0).setCellValue(doctor.getHospitalID()); // Doctor ID
+            newRow.createCell(1).setCellValue(input); // Availability slot
+
+            // Save the changes to the Excel file
+            FileOutputStream outputStream = new FileOutputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
+            availabilityWorkbook.write(outputStream);
+            outputStream.close();
 
             // Ask if they want to set another time slot
             System.out.println("Do you want to add another time slot? (yes/no): ");
@@ -718,4 +751,115 @@ public class UserController {
         availabilityWorkbook.close();
         availabilityFile.close();
     }
+    
+    /**
+     * Updates or deletes a doctor's availability in the system.
+     *
+     * @param doctor  the {@link Doctor} whose availability is to be updated
+     * @param scanner the {@link Scanner} object used to read user input
+     * @throws IOException if an I/O error occurs while accessing the Excel file
+     */
+    public void updateDoctorAvailability(Doctor doctor, Scanner scanner) throws IOException {
+        FileInputStream file = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
+        Workbook workbook = new XSSFWorkbook(file);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        System.out.println("Your Current Availability:");
+        List<Row> doctorRows = new ArrayList<>();
+        int index = 1;
+
+        // Display current availability slots for the doctor
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue; // Skip the header row
+
+            String doctorID = Helper.getCellValueAsString(row.getCell(0));
+            if (doctorID.equals(doctor.getHospitalID())) {
+                String slot = Helper.getCellValueAsString(row.getCell(1));
+                System.out.println(index + ". " + slot);
+                doctorRows.add(row);
+                index++;
+            }
+        }
+
+        if (doctorRows.isEmpty()) {
+            System.out.println("You currently have no availability set.");
+            workbook.close();
+            file.close();
+            return;
+        }
+
+        System.out.println("\nOptions:");
+        System.out.println("1. Change Time Slot");
+        System.out.println("2. Delete Time Slot");
+        int choice = Helper.getChoice(scanner, 1, 2);
+
+        if (choice == 1) {
+            System.out.print("Enter the number of the time slot to change: ");
+            int slotChoice = Helper.getChoice(scanner, 1, doctorRows.size());
+            Row selectedRow = doctorRows.get(slotChoice - 1);
+
+            String newTiming;
+            while (true) {
+                System.out.print("Enter the new date and time (format: yyyy-MM-dd HH:mm): ");
+                newTiming = scanner.nextLine();
+                if (!isValidDateTime(newTiming)) {
+                    System.out.println("Invalid format or date is in the past. Please enter a valid future date and time.");
+                } else if (doctor.getAvailability().contains(newTiming)) {
+                    System.out.println("This time slot has already been set. Please choose a different time.");
+                } else {
+                    break; // Valid input
+                }
+            }
+
+            Helper.createOrUpdateCell(selectedRow, 1, newTiming); // Update the slot timing
+            System.out.println("Time slot updated successfully.");
+        } else if (choice == 2) {
+            System.out.print("Enter the number of the time slot to delete: ");
+            int slotChoice = Helper.getChoice(scanner, 1, doctorRows.size());
+            Row selectedRow = doctorRows.get(slotChoice - 1);
+
+            int rowIndex = selectedRow.getRowNum();
+            sheet.removeRow(selectedRow);
+
+            // Shift rows upward to remove empty space
+            for (int i = rowIndex + 1; i <= sheet.getLastRowNum(); i++) {
+                Row rowToShift = sheet.getRow(i);
+                Row newRow = sheet.createRow(i - 1);
+                for (int j = 0; j < rowToShift.getLastCellNum(); j++) {
+                    Cell oldCell = rowToShift.getCell(j);
+                    if (oldCell != null) {
+                        Helper.createOrUpdateCell(newRow, j, Helper.getCellValueAsString(oldCell));
+                    }
+                }
+                sheet.removeRow(rowToShift);
+            }
+
+            System.out.println("Time Slot deleted successfully.");
+        }
+
+        file.close();
+        FileOutputStream outputStream = new FileOutputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
+        workbook.write(outputStream);
+        workbook.close();
+        outputStream.close();
+    }
+
+    
+    /**
+     * Validates if the given date and time string is in the correct format.
+     *
+     * @param dateTime the date and time string to validate
+     * @return true if the string is valid; false otherwise
+     */
+    private boolean isValidDateTime(String dateTime) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        dateFormat.setLenient(false); // Strict parsing
+        try {
+            Date parsedDate = dateFormat.parse(dateTime);
+            return !parsedDate.before(new Date()); // Ensure the date is not in the past
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
 }

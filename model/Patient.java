@@ -1,6 +1,7 @@
 package oop.model;
 
 import oop.HMS;
+import oop.util.Helper;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,8 +120,13 @@ public class Patient extends User {
             System.out.println("10. Change Password");
             System.out.println("11. Logout");
 
-            int choice = getChoice(scanner, 1, 11);
-            executeChoice(choice, hms, scanner);
+            int choice = Helper.getChoice(scanner, 1, 11);
+            if (choice == 11) {
+            	System.out.println("Logging out...");
+            	return;
+            } else {
+                executeChoice(choice, hms, scanner); // Handle other choices
+            }
         }
     }
 
@@ -157,25 +163,6 @@ public class Patient extends User {
         }
     }
 
-    private int getChoice(Scanner scanner, int min, int max) {
-        int choice = -1;
-        while (true) {
-            System.out.print("Enter your choice (" + min + "-" + max + "): ");
-            if (scanner.hasNextInt()) {
-                choice = scanner.nextInt();
-                scanner.nextLine();  // Consume newline
-                if (choice >= min && choice <= max) {
-                    break;  // Valid input
-                } else {
-                    System.out.println("Invalid choice. Please enter a number between " + min + " and " + max + ".");
-                }
-            } else {
-                System.out.println("Invalid input. Please enter a valid number.");
-                scanner.next();  // Clear invalid input
-            }
-        }
-        return choice;
-    }
 
     private void executeChoice(int choice, HMS hms, Scanner scanner) {
         try {
@@ -190,10 +177,6 @@ public class Patient extends User {
                 case 8 -> hms.viewPastAppointmentOutcomes(this);
                 case 9 -> hms.handleOutstandingBills(this);
                 case 10 -> hms.changePassword(this, scanner);
-                case 11 -> {
-                    System.out.println("Logging out...");
-                    return;
-                }
                 default -> System.out.println("Unexpected error.");
             }
         } catch (IOException e) {

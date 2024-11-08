@@ -1,5 +1,7 @@
 package oop.util;
 
+import java.util.Scanner;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
@@ -87,6 +89,34 @@ public class Helper {
             cell = row.createCell(columnIndex);
         }
         cell.setCellValue(value);
+    }
+    
+    /**
+     * Gets a validated integer choice from the user within the specified range.
+     *
+     * @param scanner the {@link Scanner} object for reading user input
+     * @param min     the minimum valid value (inclusive)
+     * @param max     the maximum valid value (inclusive)
+     * @return a validated integer choice within the range [min, max]
+     */
+    public static int getChoice(Scanner scanner, int min, int max) {
+        int choice = -1;
+        while (true) {
+            System.out.print("Enter your choice (" + min + "-" + max + "): ");
+            if (scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline
+                if (choice >= min && choice <= max) {
+                    break;
+                } else {
+                    System.out.println("Invalid choice. Please enter a number between " + min + " and " + max + ".");
+                }
+            } else {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.next(); // Clear invalid input
+            }
+        }
+        return choice;
     }
 
 }

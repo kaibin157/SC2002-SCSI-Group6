@@ -99,17 +99,18 @@ public class Doctor extends User {
             System.out.println("2. Update Patient Medical Records");
             System.out.println("3. View Personal Schedule");
             System.out.println("4. Set Availability for Appointments");
-            System.out.println("5. Accept or Decline Appointments");
-            System.out.println("6. View Upcoming Appointments");
-            System.out.println("7. Record Appointment Outcome");
-            System.out.println("8. Change Password");
-            System.out.println("9. Logout");
+            System.out.println("5. Update Availability for Appointments");
+            System.out.println("6. Accept or Decline Appointments");
+            System.out.println("7. View Upcoming Appointments");
+            System.out.println("8. Record Appointment Outcome");
+            System.out.println("9. Change Password");
+            System.out.println("10. Logout");
 
             int choice = -1;
 
             // Validate input to ensure it's an integer within the valid range (1-9)
             while (true) {
-                System.out.print("Enter your choice (1-9): ");
+                System.out.print("Enter your choice (1-10): ");
 
                 // Check if input is an integer
                 if (scanner.hasNextInt()) {
@@ -117,10 +118,10 @@ public class Doctor extends User {
                     scanner.nextLine();  // Consume newline
 
                     // Check if choice is in the valid range
-                    if (choice >= 1 && choice <= 9) {
+                    if (choice >= 1 && choice <= 10) {
                         break;  // Valid input
                     } else {
-                        System.out.println("Invalid choice. Please enter a number between 1 and 9.");
+                        System.out.println("Invalid choice. Please enter a number between 1 and 10");
                     }
                 } else {
                     System.out.println("Invalid input. Please enter a valid number.");
@@ -144,18 +145,21 @@ public class Doctor extends User {
                         hms.setDoctorAvailability(this);  // Set availability for appointments
                         break;
                     case 5:
+                        hms.updateDoctorAvailability(this,scanner);  // Manage appointment requests
+                        break;                 
+                    case 6:
                         hms.manageAppointmentRequests(this);  // Manage appointment requests
                         break;
-                    case 6:
+                    case 7:
                         hms.viewUpcomingAppointments(this);  // View upcoming appointments
                         break;
-                    case 7:
+                    case 8:
                         hms.recordAppointmentOutcome(this);  // Record outcome of an appointment
                         break;
-                    case 8:
+                    case 9:
                         hms.changePassword(this, scanner);  // Change password
                         break;
-                    case 9:
+                    case 10:
                         System.out.println("Logging out...");
                         return;  // Logout
                     default:

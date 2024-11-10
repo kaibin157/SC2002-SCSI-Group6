@@ -73,17 +73,34 @@ public class AppointmentController {
             if (row.getRowNum() == 0) continue;  // Skip header row
 
             // Retrieve the necessary details from the respective columns
-            String patientID = Helper.getCellValueAsString(row.getCell(1));  // Assuming Patient ID is in column 2
-            String doctorID = Helper.getCellValueAsString(row.getCell(0));  // Assuming Doctor ID is in column 1
-            String status = Helper.getCellValueAsString(row.getCell(6));    // Assuming Status is in column 7
-            String appointmentDate = Helper.getCellValueAsString(row.getCell(5));  // Assuming Date is in column 6
-
+            String patientID = Helper.getCellValueAsString(row.getCell(1)); 
+            String doctorID = Helper.getCellValueAsString(row.getCell(0));  
+            String status = Helper.getCellValueAsString(row.getCell(6));    
+            String appointmentDate = Helper.getCellValueAsString(row.getCell(5));  
+            String service = Helper.getCellValueAsString(row.getCell(7)); 
+            String notes = Helper.getCellValueAsString(row.getCell(8));  
+            String medications = Helper.getCellValueAsString(row.getCell(9));    
+            String prescriptionStatus = Helper.getCellValueAsString(row.getCell(10));
+            String amount = Helper.getCellValueAsString(row.getCell(11));
             // Display the details
             System.out.println("Doctor ID: " + doctorID);
             System.out.println("Patient ID: " + patientID);
             System.out.println("Date: " + appointmentDate);
-            System.out.println("Status: " + status);
+            System.out.println("Appointment Status: " + status);
+            
+            if (status.equalsIgnoreCase("completed") || status.equalsIgnoreCase("unpaid") || status.equalsIgnoreCase("paid")) {
+                System.out.println("Type of service: " + service);
+                System.out.println("Consultation Notes: " + notes);
+                System.out.println("Prescribed Medications: " + medications);
+                System.out.println("Status of prescription: " + prescriptionStatus);
+                
+                if (status.equalsIgnoreCase("paid")) {
+                	System.out.println("Amount: " + amount);
+                }
+            }
+            
             System.out.println("------------------------------------");
+            
         }
 
         // Close the workbook and file

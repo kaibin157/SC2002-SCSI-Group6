@@ -81,7 +81,7 @@ public class AppointmentController {
             String notes = Helper.getCellValueAsString(row.getCell(8));  
             String medications = Helper.getCellValueAsString(row.getCell(9));    
             String prescriptionStatus = Helper.getCellValueAsString(row.getCell(10));
-            String amount = Helper.getCellValueAsString(row.getCell(11));
+            
             // Display the details
             System.out.println("Doctor ID: " + doctorID);
             System.out.println("Patient ID: " + patientID);
@@ -93,10 +93,7 @@ public class AppointmentController {
                 System.out.println("Consultation Notes: " + notes);
                 System.out.println("Prescribed Medications: " + medications);
                 System.out.println("Status of prescription: " + prescriptionStatus);
-                
-                if (status.equalsIgnoreCase("paid")) {
-                	System.out.println("Amount: " + amount);
-                }
+              
             }
             
             System.out.println("------------------------------------");
@@ -591,6 +588,7 @@ public class AppointmentController {
             String date = Helper.getCellValueAsString(row.getCell(5));           // Appointment Date (Column 6)
             String medications = Helper.getCellValueAsString(row.getCell(9));    // Prescribed Medications (Column 10)
             String status = Helper.getCellValueAsString(row.getCell(6));         // Status (Column 7)
+            String medStatus = Helper.getCellValueAsString(row.getCell(10));
 
             // Display the information
             if (status.equalsIgnoreCase("completed") || status.equalsIgnoreCase("paid") || status.equalsIgnoreCase("unpaid")) {
@@ -600,6 +598,7 @@ public class AppointmentController {
                 System.out.println("Date: " + date);
                 System.out.println("Status: " + status);
                 System.out.println("Prescribed Medications: " + medications);
+                System.out.println("Prescription Status: " + medStatus);
                 System.out.println("------------------------------------");
             }
 
@@ -786,7 +785,7 @@ public class AppointmentController {
 
             // Check if the appointment belongs to the logged-in patient and if the status is "completed"
             String status = Helper.getCellValueAsString(row.getCell(6));  // Assuming status is in column 7
-            if (patient.getHospitalID().equalsIgnoreCase(patientID) && (status.equalsIgnoreCase("completed") || status.equalsIgnoreCase("paid"))) {
+            if (patient.getHospitalID().equalsIgnoreCase(patientID) && (status.equalsIgnoreCase("completed") || status.equalsIgnoreCase("paid") || status.equalsIgnoreCase("unpaid"))) {
                 hasPastAppointments = true;
 
                 // Retrieve and display the appointment details

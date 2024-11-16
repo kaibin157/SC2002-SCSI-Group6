@@ -153,6 +153,7 @@ public class Patient extends User {
                 break;
             } else {
                 System.out.println("Invalid choice. Please enter 1 or 2.");
+                return;
             }
         }
 

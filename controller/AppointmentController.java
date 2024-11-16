@@ -336,26 +336,52 @@ public class AppointmentController {
 
         // Ask the patient to select an appointment to reschedule
         int appointmentChoice = -1;
-        while (appointmentChoice < 1 || appointmentChoice > patientAppointments.size()) {
+        while (true) {
             System.out.print("Choose an appointment to reschedule by entering the number: ");
             if (scanner.hasNextInt()) {
                 appointmentChoice = scanner.nextInt();
-                if (appointmentChoice < 1 || appointmentChoice > patientAppointments.size()) {
-                    System.out.println("Invalid choice. Please choose a valid appointment number.");
+                if (appointmentChoice >= 1 && appointmentChoice <= patientAppointments.size()) {
+                    break; // Valid input, exit the loop
+                } else {
+                    System.out.println("Invalid choice.");
+                    appointmentWorkbook.close();
+                    appointmentFile.close();
+                    return;
                 }
             } else {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next();  // Clear invalid input
+                System.out.println("Invalid choice.");
+                appointmentWorkbook.close();
+                appointmentFile.close();
+                return; // Exit the method and return to the main menu
             }
         }
-        scanner.nextLine();  // Consume the newline
+        scanner.nextLine(); // Consume the newline
 
         // Get the selected appointment
         Row selectedAppointmentRow = patientAppointments.get(appointmentChoice - 1);
         String oldDateTime = Helper.getCellValueAsString(selectedAppointmentRow.getCell(5));  // Assuming old slot in column 6
-        String doctorID = Helper.getCellValueAsString(selectedAppointmentRow.getCell(0));     // Assuming doctor ID in column 1
+        String oldDoctorID = Helper.getCellValueAsString(selectedAppointmentRow.getCell(0)); // Assuming doctor ID is in column 1
 
-        // Show available slots for the selected doctor from DocAvailability_List.xlsx
+        // Reuse viewAvailableAppointmentSlots() logic to display all available slots
+        System.out.println("\nAll Available Appointment Slots:");
+        Map<String, String> doctorNameMap = new HashMap<>();
+
+        // Open the Staff_List.xlsx file to map doctor IDs to names
+        FileInputStream staffFile = new FileInputStream(Constant.STAFF_FILE_PATH);
+        Workbook staffWorkbook = new XSSFWorkbook(staffFile);
+        Sheet staffSheet = staffWorkbook.getSheetAt(0);  // Assuming the first sheet contains staff data
+
+        for (Row staffRow : staffSheet) {
+            if (staffRow.getRowNum() == 0) continue; // Skip header row
+            String staffID = Helper.getCellValueAsString(staffRow.getCell(0));  // Assuming Staff ID is in column 1
+            String staffName = Helper.getCellValueAsString(staffRow.getCell(1));  // Assuming Staff Name is in column 2
+            String role = Helper.getCellValueAsString(staffRow.getCell(2));  // Assuming Role is in column 3
+            if (role.equalsIgnoreCase("doctor")) {  // Check if the role is 'doctor'
+                doctorNameMap.put(staffID, staffName);
+            }
+        }
+
+        // Open the DocAvailability_List.xlsx file to get available slots
         FileInputStream availabilityFile = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
         Workbook availabilityWorkbook = new XSSFWorkbook(availabilityFile);
         Sheet availabilitySheet = availabilityWorkbook.getSheetAt(0);  // Assuming data is on the first sheet
@@ -363,23 +389,25 @@ public class AppointmentController {
         List<String> availableSlots = new ArrayList<>();
         List<Row> availableRows = new ArrayList<>();
 
-        System.out.println("Available slots for Doctor ID: " + doctorID);
-        for (Row row : availabilitySheet) {
-            if (row.getRowNum() == 0) continue;  // Skip header row
+        for (Row availabilityRow : availabilitySheet) {
+            if (availabilityRow.getRowNum() == 0) continue; // Skip header row
 
-            String availableDoctorID = Helper.getCellValueAsString(row.getCell(0));  // Assuming Doctor ID in column 1
-            if (availableDoctorID.equalsIgnoreCase(doctorID)) {
-                String availabilitySlot = Helper.getCellValueAsString(row.getCell(1));  // Assuming availability slot in column 2
-                availableSlots.add(availabilitySlot);
-                availableRows.add(row);  // Keep track of the row for later update
-                System.out.println((availableSlots.size()) + ". " + availabilitySlot);
-            }
+            String doctorID = Helper.getCellValueAsString(availabilityRow.getCell(0));  // Doctor ID in column 1
+            String appointmentSlot = Helper.getCellValueAsString(availabilityRow.getCell(1));  // Slot in column 2
+
+            String doctorName = doctorNameMap.getOrDefault(doctorID, "Unknown Doctor");
+
+            availableSlots.add(appointmentSlot);
+            availableRows.add(availabilityRow);
+            System.out.println((availableSlots.size()) + ". Doctor: " + doctorName + " | Slot: " + appointmentSlot);
         }
 
         if (availableSlots.isEmpty()) {
-            System.out.println("No available slots for this doctor.");
+            System.out.println("No available appointment slots at the moment.");
             availabilityWorkbook.close();
             availabilityFile.close();
+            staffWorkbook.close();
+            staffFile.close();
             appointmentWorkbook.close();
             appointmentFile.close();
             return;
@@ -387,29 +415,48 @@ public class AppointmentController {
 
         // Ask the patient to select a new time slot
         int slotChoice = -1;
-        while (slotChoice < 1 || slotChoice > availableSlots.size()) {
+        while (true) {
             System.out.print("Choose a new slot by entering the number: ");
             if (scanner.hasNextInt()) {
                 slotChoice = scanner.nextInt();
-                if (slotChoice < 1 || slotChoice > availableSlots.size()) {
-                    System.out.println("Invalid choice. Please choose a valid slot number.");
+                if (slotChoice >= 1 && slotChoice <= availableSlots.size()) {
+                    break; // Valid input
+                } else {
+                    System.out.println("Invalid choice.");
+                    availabilityWorkbook.close();
+                    availabilityFile.close();
+                    staffWorkbook.close();
+                    staffFile.close();
+                    appointmentWorkbook.close();
+                    appointmentFile.close();
+                    return;
                 }
             } else {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next();  // Clear invalid input
+                System.out.println("Invalid choice.");
+                availabilityWorkbook.close();
+                availabilityFile.close();
+                staffWorkbook.close();
+                staffFile.close();
+                appointmentWorkbook.close();
+                appointmentFile.close();
+                return; // Exit the method
             }
         }
         scanner.nextLine();  // Consume the newline
 
         String newDateTime = availableSlots.get(slotChoice - 1);
         Row newSlotRow = availableRows.get(slotChoice - 1);
+        String selectedDoctorID = Helper.getCellValueAsString(newSlotRow.getCell(0));
+        String selectedDoctorName = doctorNameMap.getOrDefault(selectedDoctorID, "Unknown Doctor");
 
-        // Update the Appointment_List.xlsx with the new time slot
+        // Update the Appointment_List.xlsx with the new time slot and doctor name
         selectedAppointmentRow.getCell(5).setCellValue(newDateTime);  // Update appointment time (assuming it's in column 6)
+        selectedAppointmentRow.getCell(0).setCellValue(selectedDoctorID); // Update to selected doctor ID
+        selectedAppointmentRow.getCell(3).setCellValue(selectedDoctorName); // Update doctor name (assuming column 4 is doctor name)
 
         // Add the old slot back to DocAvailability_List.xlsx
         Row newRow = availabilitySheet.createRow(availabilitySheet.getLastRowNum() + 1);
-        newRow.createCell(0).setCellValue(doctorID);  // Doctor ID
+        newRow.createCell(0).setCellValue(oldDoctorID);  // Correct Doctor ID for the old slot
         newRow.createCell(1).setCellValue(oldDateTime);  // Old time slot becomes available
 
         // Remove the newly selected slot from DocAvailability_List.xlsx without leaving an empty row
@@ -421,7 +468,7 @@ public class AppointmentController {
         }
 
         // Write changes back to the Excel files
-        availabilityFile.close();  // Close input stream before writing
+        availabilityFile.close();
         FileOutputStream availabilityOutputStream = new FileOutputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
         availabilityWorkbook.write(availabilityOutputStream);
         availabilityWorkbook.close();
@@ -432,8 +479,13 @@ public class AppointmentController {
         appointmentWorkbook.close();
         appointmentOutputStream.close();
 
-        System.out.println("Appointment rescheduled successfully to " + newDateTime);
+        staffWorkbook.close();
+        staffFile.close();
+
+        System.out.println("Appointment rescheduled successfully to " + newDateTime + " with Dr. " + selectedDoctorName);
     }
+
+
 
     /**
      * Cancels an appointment for a patient by allowing them to select from their pending or confirmed appointments.
@@ -488,10 +540,16 @@ public class AppointmentController {
                 appointmentChoice = scanner.nextInt();
                 if (appointmentChoice < 1 || appointmentChoice > cancelableAppointments.size()) {
                     System.out.println("Invalid choice. Please choose a valid appointment number.");
+                    appointmentWorkbook.close();
+                    appointmentFile.close();
+                    return;
                 }
             } else {
                 System.out.println("Invalid input. Please enter a number.");
                 scanner.next();  // Clear invalid input
+                appointmentWorkbook.close();
+                appointmentFile.close();
+                return;
             }
         }
         scanner.nextLine();  // Consume the newline

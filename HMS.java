@@ -201,12 +201,12 @@ public class HMS {
         // Open the Excel file to read medication data
         FileInputStream file = new FileInputStream(Constant.MEDICINE_FILE_PATH);
         Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
+        Sheet sheet = workbook.getSheetAt(0); // Assuming data is on the first sheet
 
         // Display the list of medications
         System.out.println("Medication Inventory:");
         for (Row row : sheet) {
-            if (row.getRowNum() == 0) continue;  // Skip header row
+            if (row.getRowNum() == 0) continue; // Skip header row
 
             String medicationName = row.getCell(0).getStringCellValue();
             int stockLevel = (int) row.getCell(1).getNumericCellValue();
@@ -215,7 +215,7 @@ public class HMS {
             System.out.println("Medication: " + medicationName + " | Stock Level: " + stockLevel + " | Low Stock Alert: " + lowStockAlert);
         }
 
-        boolean validInput = false;  // Flag to check if input is valid
+        boolean validInput = false; // Flag to check if input is valid
         while (!validInput) {
             try {
                 // Ask the administrator to choose an action
@@ -223,9 +223,10 @@ public class HMS {
                 System.out.println("1. Add Medication");
                 System.out.println("2. Update Medication Stock");
                 System.out.println("3. Remove Medication");
+                System.out.println("Enter any other number to return to the main menu.");
 
-                int choice = scanner.nextInt();  // Attempt to read an integer
-                scanner.nextLine();  // Consume newline
+                int choice = scanner.nextInt(); // Attempt to read an integer
+                scanner.nextLine(); // Consume newline
 
                 switch (choice) {
                     case 1:
@@ -241,11 +242,14 @@ public class HMS {
                         validInput = true;
                         break;
                     default:
-                        System.out.println("Invalid choice. Please enter a number between 1 and 3.");
+                        System.out.println("Returning to the main menu...");
+                        workbook.close();
+                        file.close();
+                        return; // Exit the method to return to the main menu
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
-                scanner.nextLine();  // Clear the invalid input
+                scanner.nextLine(); // Clear the invalid input
             }
         }
 
@@ -253,6 +257,7 @@ public class HMS {
         workbook.close();
         file.close();
     }
+
 
     /**
      * Views patient records (doctors can only see their patients' records).
@@ -494,7 +499,7 @@ public class HMS {
             // Verify current password
             if (!authController.authenticate(user.getHospitalID(), currentPassword)) {
                 System.out.println("Current password is incorrect. Please try again.");
-                continue;
+                return;
             }
 
             // Prompt for new password
@@ -773,12 +778,10 @@ public class HMS {
             String requestedAmount = Helper.getCellValueAsString(row.getCell(2));  // Requested Amount (Column 3)
             String status = Helper.getCellValueAsString(row.getCell(3));  // Status (Column 4)
 
-            // Check if the pharmacist ID matches the current logged-in pharmacist
-            if (pharmacist.getHospitalID().equalsIgnoreCase(pharmacistID)) {
                 // Display the replenishment request details
-                System.out.println("Medication: " + medicationName + " | Requested Amount: " + requestedAmount + " | Status: " + status);
+                System.out.println("Pharmacist ID: " + pharmacistID + " | Medication: " + medicationName + " | Requested Amount: " + requestedAmount + " | Status: " + status);
                 hasRequests = true;
-            }
+            
         }
 
         if (!hasRequests) {

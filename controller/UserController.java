@@ -643,26 +643,60 @@ public class UserController {
      * @throws IOException if an I/O error occurs while accessing the Excel file
      */
     public void viewDoctorSchedule(Doctor doctor, List<Appointment> appointments) throws IOException {
+        // Open the Appointment_List.xlsx file
+        FileInputStream file = new FileInputStream(Constant.APPOINTMENT_FILE_PATH);
+        Workbook workbook = new XSSFWorkbook(file);
+        Sheet sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date currentDate = new Date();
+        boolean hasUpcomingAppointments = false;
+
         System.out.println("Upcoming Appointments for Dr. " + doctor.getName() + ":");
 
-        boolean hasAppointments = false;
+        // Iterate over the rows in the Excel file
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;  // Skip header row
 
-        // Loop through all appointments to find those assigned to this doctor
-        for (Appointment appointment : appointments) {
-            if (appointment.getDoctor().equals(doctor) && appointment.getStatus().equalsIgnoreCase("confirmed")) {
-                hasAppointments = true;
-                System.out.println("Appointment with " + appointment.getPatient().getName() + " on " + appointment.getDateTime());
+            // Extract relevant data from the row
+            String doctorID = row.getCell(0).getStringCellValue();  // Assuming doctor ID is in column 1
+            String status = row.getCell(6).getStringCellValue();    // Assuming status is in column 7
+            String appointmentDateStr = row.getCell(5).getStringCellValue();  // Assuming date is in column 6
+
+            try {
+                Date appointmentDate = dateFormat.parse(appointmentDateStr);  // Parse the date from the string
+
+                // Check if the appointment is for this doctor, has a "confirmed" status, and is in the future
+                if (doctorID.equals(doctor.getHospitalID()) && status.equalsIgnoreCase("confirmed") && appointmentDate.after(currentDate)) {
+                    hasUpcomingAppointments = true;
+
+                    // Extract and display relevant appointment details
+                    String appointmentID = row.getCell(2).getStringCellValue();  // Assuming appointment ID is in column 3
+                    String patientID = row.getCell(1).getStringCellValue();      // Assuming patient ID is in column 2
+                    String patientName = row.getCell(4).getStringCellValue();    // Assuming patient name is in column 5
+
+                    System.out.println("Appointment ID: " + appointmentID);
+                    System.out.println("Patient ID: " + patientID);
+                    System.out.println("Patient Name: " + patientName);
+                    System.out.println("Appointment Date: " + appointmentDateStr);
+                    System.out.println("-----------------------------------------");
+                }
+            } catch (Exception e) {
+                System.out.println("Error parsing date for appointment: " + row.getCell(2).getStringCellValue());
             }
         }
 
-        if (!hasAppointments) {
+        if (!hasUpcomingAppointments) {
             System.out.println("No upcoming appointments found.");
         }
 
+        workbook.close();
+        file.close();
+
         // Read and display the doctor's available slots from DocAvailability_List.xlsx
-        FileInputStream file = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
-        Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
+        file = new FileInputStream(Constant.DOC_AVAILABILITY_FILE_PATH);
+        workbook = new XSSFWorkbook(file);
+        sheet = workbook.getSheetAt(0);  // Assuming data is on the first sheet
 
         List<String> availability = new ArrayList<>();
         for (Row row : sheet) {

@@ -70,7 +70,7 @@ All the other controllers (less report and manage credentials) will use data dow
 
 ## Dependencies
 We use apache.poi for our excel database. The below folder contains all necessary dependencies to be imported <br>
-https://github.com/VigneshManiSenthilnathan/CAM/tree/main/CampManagement/poi-bin-5.2.3-20220909
+https://github.com/kaibin157/SC2002-SCSI-Group6/tree/main/poi-bin-5.2.3
 
 ## Collaborators
 CHONG KAI BIN <br> https://github.com/kaibin157 <br><br>

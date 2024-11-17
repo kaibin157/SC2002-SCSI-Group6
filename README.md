@@ -73,11 +73,11 @@ We use apache.poi for our excel database. The below folder contains all necessar
 https://github.com/VigneshManiSenthilnathan/CAM/tree/main/CampManagement/poi-bin-5.2.3-20220909
 
 ## Collaborators
-BARRY NG HAI SHEN <br> https://github.com/barryyng <br><br>
-ZAFRUL AZIM NAZIR <br> https://github.com/Frizzante16 <br><br>
-YE YANSONG <br> https://github.com/neongasyy <br><br>
-MANI SENTHILNATHAN VIGNESH <br> https://github.com/VigneshManiSenthilnathan <br><br>
-VARUN VIVEKANANTHAN <br> https://github.com/dragon21356 <br><br>
+CHONG KAI BIN <br> https://github.com/kaibin157 <br><br>
+LEE MEI TING <br> https://github.com/Infernoexe <br><br>
+HENG ZENG XI <br> https://github.com/HengZengXi <br><br>
+NG YI XIANG VIGNESH <br> https://github.com/yixiangn <br><br>
+SACHDEV GARV <br> https://github.com/gavkujo <br><br>
 
 
 

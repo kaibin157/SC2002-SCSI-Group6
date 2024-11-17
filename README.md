@@ -1,5 +1,5 @@
-# CAM
-SC2002 Hospital Management System. <br>
+# Hospital Management System
+SC2002 HMS. <br>
 
 This is a year 2 computer science project as part of our OOP curriculum. We took a structured approach towards system design and leverages encapsulation and abstraction principles of Java. This project was also written with the SOLID principles in mind.
 <br><br>

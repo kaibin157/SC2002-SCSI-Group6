@@ -1,7 +1,7 @@
 # Hospital Management System
 SC2002 HMS. <br>
 
-This is a year 2 computer science project as part of our OOP curriculum. We took a structured approach towards system design and leverages encapsulation and abstraction principles of Java. This project was also written with the SOLID principles in mind.
+This is a year 2 computer science project as part of our OOP curriculum. We took a structured approach towards the Model-View-Controller (MVC) system design and leveraged the principles of Java, such as encapsulation and abstraction. This project was also written with the SOLID principles in mind.
 <br><br>
 We have built a hospital management system that automates the management of hospital operations, including patient management, appointment scheduling, staff management, and billing. Patients can schedule, reschedule, and cancel appointments, view medical records, and pay outstanding bills. Doctors can manage appointments, update patient records with diagnoses and treatments, and set availability. Pharmacists can manage medication inventory, submit replenishment requests, and also send invoice to patient. Administrators oversee staff, appointments, and inventory, and approve replenishment requests.
 

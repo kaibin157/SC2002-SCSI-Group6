@@ -11,12 +11,12 @@ Please download the relevant images to view
 
 ### Class Diagram
 Below is the link to our class diagram. <br>
-https://github.com/kaibin157/SC2002-SCSI-Group6/blob/main/UML%20Class%20Diagram/Group%206%20Class%20Diagram.png
+[Class Diagram](https://github.com/kaibin157/SC2002-SCSI-Group6/blob/main/UML%20Class%20Diagram/Group%206%20Class%20Diagram.png)
 
 
 ## Dependencies
 We use apache.poi for our excel database. The below folder contains all necessary dependencies to be imported <br>
-[https://github.com/kaibin157/SC2002-SCSI-Group6/tree/main/poi-bin-5.2.3](https://github.com/kaibin157/SC2002-SCSI-Group6/tree/main/Source%20Code/poi-bin-5.2.3)
+[apache.poi](https://github.com/kaibin157/SC2002-SCSI-Group6/tree/main/Source%20Code/poi-bin-5.2.3)
 
 ## Collaborators
 CHONG KAI BIN <br> https://github.com/kaibin157 <br><br>

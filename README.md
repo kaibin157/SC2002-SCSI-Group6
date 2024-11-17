@@ -9,10 +9,8 @@ We have built a hospital management system that automates the management of hosp
 Below are our UML Diagrams split by functional views for ease of viewing.
 Please download the relevant images to view
 
-### Complete Diagram
-Below we have the complete class diagram
-
-![alt text](https://github.com/VigneshManiSenthilnathan/CAM/blob/main/CampManagement/lib/images/UML_Diagrams/(1)%20Full_Class_Diagram.png)
+### Class Diagram
+https://github.com/kaibin157/SC2002-SCSI-Group6/blob/main/UML%20Class%20Diagram/Group%206%20Class%20Diagram.png
 
 ### Controller Package
 Below we have the class diagram for the controller package <br>

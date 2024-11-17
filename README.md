@@ -15,7 +15,7 @@ Below is the link to our class diagram. <br>
 
 
 ## Dependencies
-We use apache.poi to read from and write to the .xlsx files. The below folder contains all necessary dependencies to be imported <br>
+We use apache.poi to read from and write to the .xlsx files. The below folder contains all necessary dependencies to be imported to eclipse. <br>
 [apache.poi](https://github.com/kaibin157/SC2002-SCSI-Group6/tree/main/Source%20Code/poi-bin-5.2.3)
 
 ## Collaborators

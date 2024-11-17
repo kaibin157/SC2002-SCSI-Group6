@@ -1,9 +1,9 @@
 # CAM
-SC2002 Camp Management System. <br>
+SC2002 Hospital Management System. <br>
 
-This is a year 2 computer science project as part of our OOP curriculum. We took a structured approach towards system design by leveraging encapsulation and abstraction principles of Java. This project was also written with the SOLID principles in mind
+This is a year 2 computer science project as part of our OOP curriculum. We took a structured approach towards system design and leverages encapsulation and abstraction principles of Java. This project was also written with the SOLID principles in mind.
 <br><br>
-We have built a camp management system that allows a predefined set of staff and students to interact through a common platform. The staff can create, update, delete, and modify camps for students to join. The students can sign up for these camps as attendees or camp committee members. Attendees can submit enquiries that staff and committee members for the respective camp can respond to. Camp committee members can also submit suggestions for the respective staff of their camp to approve. Finally, staff and camp committee members can generate reports to view details of their camps.
+We have built a hospital management system that automates the management of hospital operations, including patient management, appointment scheduling, staff management, and billing.  Patients can schedule, reschedule, and cancel appointments, view medical records, and pay outstanding bills. Doctors can manage appointments, update patient records with diagnoses and treatments, and set availability. Pharmacists can manage medication inventory, submit replenishment requests, and also send invoice to patient. Administrators oversee staff, appointments, and inventory, and approve replenishment requests.
 
 ## UML Diagrams
 Below are our UML Diagrams split by functional views for ease of viewing.
@@ -70,7 +70,7 @@ All the other controllers (less report and manage credentials) will use data dow
 
 ## Dependencies
 We use apache.poi for our excel database. The below folder contains all necessary dependencies to be imported <br>
-https://github.com/VigneshManiSenthilnathan/CAM/tree/main/CampManagement/poi-bin-5.2.3-20220909
+https://github.com/kaibin157/SC2002-SCSI-Group6/tree/main/poi-bin-5.2.3
 
 ## Collaborators
 CHONG KAI BIN <br> https://github.com/kaibin157 <br><br>

@@ -17,10 +17,6 @@ The link below directs you to our report. The report includes elaborated details
 The link below is our source code.  <br>
 [Source Code](https://github.com/kaibin157/SC2002-SCSI-Group6/tree/d2106378261f053f3e043834917d83e0fe6ef64b/Source%20Code)
 
-### Directory
-The picture below shows the directory level to the source code and how it should look like when running the program. 
-![Directory](http://url/to/img.png)
-
 ## Test Cases 
 The link below directs you to pictures of test cases that were taken. The pictures are labelled with the corresponding test case numbers according to the assignment pdf we were given.  <br>
 [Test Cases](https://github.com/kaibin157/SC2002-SCSI-Group6/tree/d2106378261f053f3e043834917d83e0fe6ef64b/Test%20Cases)
